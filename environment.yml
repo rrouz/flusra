@@ -1,0 +1,8 @@
+name: sra
+channels:
+    - bioconda
+    - conda-forge
+dependencies:
+  - python=3.12.3
+  - pip=24.0
+  - nextflow=23.10.1
