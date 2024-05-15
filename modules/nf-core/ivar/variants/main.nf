@@ -10,7 +10,7 @@ process IVAR_VARIANTS {
     path reference
 
     output:
-    path "*.tsv",         emit: variants
+    path "*_variants.tsv",         emit: variants
     path  "versions.yml", emit: versions
 
     script:
