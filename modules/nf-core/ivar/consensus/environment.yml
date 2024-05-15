@@ -1,0 +1,7 @@
+name: bwa_mem
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - ivar=1.4.2
+  - samtools=1.19.2

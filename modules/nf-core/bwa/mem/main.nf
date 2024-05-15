@@ -1,20 +1,18 @@
 process BWA_MEM {
-    tag "$meta.id"
+    tag "$meta"
     label 'process_high'
 
     conda "${moduleDir}/environment.yml"
 
     input:
-    tuple val(meta) , path(reads)
-    tuple val(meta2), path(index)
-    tuple val(meta3), path(fasta)
+    tuple val(meta), path(reads)
+    val index
 
     output:
-    tuple val(meta), path("*.bam")  , emit: bam,    optional: true
-    path  "versions.yml"            , emit: versions
+    tuple val(meta), path("*.bam") , emit: bam
+    path  "versions.yml"           , emit: versions
 
     script:
-    def prefix = "${meta.id}"
     """
     bwa mem \\
         -t $task.cpus \\
@@ -22,7 +20,7 @@ process BWA_MEM {
         $reads \\
         | samtools view \\
         -F 4 -b \\
-        | samtools sort -o ${n}.bam
+        | samtools sort -o ${meta}.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -32,19 +30,8 @@ process BWA_MEM {
     """
 
     stub:
-    def args = task.ext.args ?: ''
-    def args2 = task.ext.args2 ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    def samtools_command = sort_bam ? 'sort' : 'view'
-    def extension = args2.contains("--output-fmt sam")   ? "sam" :
-                    args2.contains("--output-fmt cram")  ? "cram":
-                    sort_bam && args2.contains("-O cram")? "cram":
-                    !sort_bam && args2.contains("-C")    ? "cram":
-                    "bam"
     """
-    touch ${prefix}.${extension}
-    touch ${prefix}.csi
-    touch ${prefix}.crai
+    touch ${prefix}.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
