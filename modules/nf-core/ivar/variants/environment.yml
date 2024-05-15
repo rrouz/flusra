@@ -1,4 +1,4 @@
-name: ivar_consensus
+name: ivar_variants
 channels:
   - conda-forge
   - bioconda

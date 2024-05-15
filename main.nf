@@ -4,6 +4,7 @@ nextflow.enable.dsl = 2
 
 include { BWA_MEM                 } from './modules/nf-core/bwa/mem/main'
 include { IVAR_CONSENSUS          } from './modules/nf-core/ivar/consensus/main'
+include { IVAR_VARIANTS           } from './modules/nf-core/ivar/variants/main'
 
 workflow {
     Channel
@@ -16,8 +17,8 @@ workflow {
     Channel.from(readFastaHeaders(params.reference))
         .set { headers_ch }
 
-    IVAR_CONSENSUS(headers_ch, BWA_MEM.out.bam)
-
+    IVAR_CONSENSUS(headers_ch, BWA_MEM.out.bam, params.reference)
+    IVAR_VARIANTS(headers_ch, BWA_MEM.out.bam, params.reference)
 }
 
 def readFastaHeaders(fastaFile) {

@@ -1,4 +1,4 @@
-process IVAR_CONSENSUS {
+process IVAR_VARIANTS {
     tag "$meta - $referenceGene"
     label 'process_high'
 
@@ -10,7 +10,7 @@ process IVAR_CONSENSUS {
     path reference
 
     output:
-    path  "*.fa",         emit: consensus
+    path "*.tsv",         emit: variants
     path  "versions.yml", emit: versions
 
     script:
@@ -18,7 +18,7 @@ process IVAR_CONSENSUS {
     """
     samtools index $bamFile
 
-    samtools mpileup --reference $reference -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar consensus -p ${meta}_${gene}_cns -t 0.5 -m 1
+    samtools mpileup --reference $reference -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar variants -p v${meta}_${gene}_variants -t 0.01 -m 1
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -29,7 +29,7 @@ process IVAR_CONSENSUS {
 
     stub:
     """
-    touch ${meta}_${gene}_cns.fa
+    touch ${meta}_${gene}_variants.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
