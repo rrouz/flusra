@@ -18,7 +18,7 @@ process IVAR_VARIANTS {
     """
     samtools index $bamFile
 
-    samtools mpileup --reference $reference -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar variants -p v${meta}_${gene}_variants -t 0.01 -m 1
+    samtools mpileup --reference $reference -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar variants -p ${meta}_${gene}_variants -t 0.01 -m 1
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
