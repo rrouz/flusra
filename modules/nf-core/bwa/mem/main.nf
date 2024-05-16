@@ -19,8 +19,9 @@ process BWA_MEM {
         -P $index \\
         $reads \\
         | samtools view \\
-        -F 4 -b \\
-        | samtools sort -o ${meta}.bam
+            -F 4 -b \\
+            | samtools sort \\
+                -o ${meta}.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
