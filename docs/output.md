@@ -1,4 +1,4 @@
-# flusra/flusra: Output
+# flusra: Output
 
 ## Introduction
 
