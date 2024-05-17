@@ -1,42 +1,17 @@
 #!/usr/bin/env nextflow
 
-nextflow.enable.dsl = 2
-
-include { BWA_MEM                 } from './modules/nf-core/bwa/mem/main'
-include { IVAR_CONSENSUS          } from './modules/nf-core/ivar/consensus/main'
-include { IVAR_VARIANTS           } from './modules/nf-core/ivar/variants/main'
-include { SAMTOOLS_DEPTH          } from './modules/nf-core/samtools/depth/main'
-include { SRATOOLS_FASTERQDUMP    } from './modules/nf-core/sratools/fasterqdump/main'
+include { FLUSRA  } from './workflows/flusra'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_flusra_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_flusra_pipeline'
 
 workflow {
-    // take list of SRA accessions from file and convert to a channel
-    Channel.fromPath(params.sra_accessions)
-        .splitText()
-        .map { it.trim() }
-        .set { sra_accessions_ch }
+    PIPELINE_INITIALISATION(params.bioproject, params.email, params.metadata)
 
-    SRATOOLS_FASTERQDUMP(sra_accessions_ch)
-
-    BWA_MEM(SRATOOLS_FASTERQDUMP.out.reads, params.reference)
-
-    // make this a tuple of reference and gene
-    Channel.from(readFastaHeaders(params.reference))
-        .set { headers_ch }
-
-    IVAR_CONSENSUS(headers_ch, BWA_MEM.out.bam, params.reference)
-    IVAR_VARIANTS(headers_ch, BWA_MEM.out.bam, params.reference)
-    SAMTOOLS_DEPTH(headers_ch, BWA_MEM.out.bam)
-}
-
-def readFastaHeaders(fastaFile) {
-    def headers = []
-    new File(fastaFile).withReader { reader ->
-        def line
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith(">")) {
-                headers << line.substring(1)
-            }
-        }
+    if (PIPELINE_INITIALISATION.out.sra_accessions) {
+        FLUSRA(PIPELINE_INITIALISATION.out.sra_accessions)
+    } else {
+        log.info("No additional SRA accessions to process")
     }
-    return headers
+    PIPELINE_COMPLETION()
 }
+

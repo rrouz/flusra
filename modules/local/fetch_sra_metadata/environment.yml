@@ -1,0 +1,9 @@
+name: fetch_sra_metadata
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.12.3
+  - pip:
+      - biopython==1.83
+      - pandas==2.2.2
