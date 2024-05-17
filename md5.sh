@@ -21,7 +21,7 @@ compare_checksums() {
             observed_checksum=$(generate_md5_checksum "$observed_file_path")
 
             if [ "$expected_checksum" != "$observed_checksum" ]; then
-                echo "Checksum mismatch for file: $file_name"
+                echo -e "\033[0;31mChecksum mismatch for file: $file_name\033[0m"
                 echo "Expected: $expected_checksum"
                 echo "Observed: $observed_checksum"
             else
@@ -33,4 +33,4 @@ compare_checksums() {
     done < <(find "$expected_dir" -type f -print0)
 }
 
-compare_checksums "test/output" "testing/output"
+compare_checksums "test/output_2" "testing/output"
