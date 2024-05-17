@@ -6,13 +6,18 @@ include { BWA_MEM                 } from './modules/nf-core/bwa/mem/main'
 include { IVAR_CONSENSUS          } from './modules/nf-core/ivar/consensus/main'
 include { IVAR_VARIANTS           } from './modules/nf-core/ivar/variants/main'
 include { SAMTOOLS_DEPTH          } from './modules/nf-core/samtools/depth/main'
+include { SRATOOLS_FASTERQDUMP    } from './modules/nf-core/sratools/fasterqdump/main'
 
 workflow {
-    Channel
-        .fromFilePairs("${params.sra_data}*_{1,2}.fastq", size: 2)
-        .set { fastaq_ch }
+    // take list of SRA accessions from file and convert to a channel
+    Channel.fromPath(params.sra_accessions)
+        .splitText()
+        .map { it.trim() }
+        .set { sra_accessions_ch }
 
-    BWA_MEM(fastaq_ch, params.index)
+    SRATOOLS_FASTERQDUMP(sra_accessions_ch)
+
+    BWA_MEM(SRATOOLS_FASTERQDUMP.out.reads, params.reference)
 
     // make this a tuple of reference and gene
     Channel.from(readFastaHeaders(params.reference))

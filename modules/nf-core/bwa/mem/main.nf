@@ -6,7 +6,7 @@ process BWA_MEM {
 
     input:
     tuple val(sra), path(reads)
-    val index
+    val reference
 
     output:
     tuple val(sra), path("*.bam") , emit: bam
@@ -14,9 +14,11 @@ process BWA_MEM {
 
     script:
     """
+    bwa index -p "reference" $reference
+
     bwa mem \\
         -t $task.cpus \\
-        -P $index \\
+        -P "reference" \\
         $reads \\
         | samtools view \\
             -F 4 -b \\
