@@ -1,12 +1,12 @@
 process IVAR_CONSENSUS {
-    tag "$meta - $referenceGene"
+    tag "$sra - $referenceGene"
     label 'process_high'
 
     conda "${moduleDir}/environment.yml"
 
     input:
     each referenceGene
-    tuple val(meta), path(bamFile)
+    tuple val(sra), path(bamFile)
     path reference
 
     output:
@@ -18,7 +18,7 @@ process IVAR_CONSENSUS {
     """
     samtools index $bamFile
 
-    samtools mpileup --reference $reference -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar consensus -p ${meta}_${gene}_cns -t 0.5 -m 1
+    samtools mpileup --reference $reference -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar consensus -p ${sra}_${gene}_cns -t 0.5 -m 1
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -29,7 +29,7 @@ process IVAR_CONSENSUS {
 
     stub:
     """
-    touch ${meta}_${gene}_cns.fa
+    touch ${sra}_${gene}_cns.fa
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
