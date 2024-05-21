@@ -16,6 +16,8 @@ process SAMTOOLS_DEPTH {
     script:
     def gene = referenceGene.split("\\|")[0]
     """
+    samtools index $bamFile
+
     samtools \\
         depth \\
         --reference $reference \\
