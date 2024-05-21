@@ -20,7 +20,7 @@ workflow FLUSRA {
 
     IVAR_CONSENSUS(headers_ch, BWA_MEM.out.bam, params.reference)
     IVAR_VARIANTS(headers_ch, BWA_MEM.out.bam, params.reference)
-    SAMTOOLS_DEPTH(headers_ch, BWA_MEM.out.bam)
+    SAMTOOLS_DEPTH(headers_ch, BWA_MEM.out.bam, params.reference)
 }
 
 def readFastaHeaders(fastaFile) {

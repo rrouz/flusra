@@ -7,6 +7,7 @@ process SAMTOOLS_DEPTH {
     input:
     each referenceGene
     tuple val(sra), path(bamFile)
+    path reference
 
     output:
     path "*_depth.tsv"        , emit: tsv
@@ -17,6 +18,8 @@ process SAMTOOLS_DEPTH {
     """
     samtools \\
         depth \\
+        --reference $reference \\
+        -r \"$referenceGene\" \\
         --threads ${task.cpus-1} \\
         -aa \\
         $bamFile \\
