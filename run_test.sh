@@ -6,6 +6,6 @@ cd test/input/fastq/
 
 cd -
 
-nextflow run main.nf -profile test
+nextflow run main.nf -profile test,mamba
 
 bash md5.sh
