@@ -24,13 +24,15 @@ compare_checksums() {
                 echo -e "\033[0;31mChecksum mismatch for file: $file_name\033[0m"
                 echo "Expected: $expected_checksum"
                 echo "Observed: $observed_checksum"
+                exit 1
             else
                 echo "Checksum matched for file: $file_name"
             fi
         else
             echo "File not found: $file_name at $expected_file_path or $observed_file_path"
+            exit 1
         fi
     done < <(find "$expected_dir" -type f -print0)
 }
 
-compare_checksums "test/output_2" "testing/output"
+compare_checksums "test/output" "testing/output"
