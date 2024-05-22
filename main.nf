@@ -11,6 +11,12 @@ workflow {
         log.info("Skipping BioProject fetch")
     }
 
+    if (params.only_fetch) {
+        log.info("Only fetching BioProject data, exiting")
+        PIPELINE_COMPLETION()
+        exit 0
+    }
+
     if (params.bioproject && PIPELINE_INITIALISATION.out.sra_accessions) {
         FLUSRA(PIPELINE_INITIALISATION.out.sra_accessions)
     } else if (params.sra_accessions) {
