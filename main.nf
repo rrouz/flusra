@@ -5,13 +5,25 @@ include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_flus
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_flusra_pipeline'
 
 workflow {
-    PIPELINE_INITIALISATION(params.bioproject, params.email, params.metadata)
+    if (params.bioproject) {
+        PIPELINE_INITIALISATION(params.bioproject, params.email, params.metadata)
+    } else {
+        log.info("Skipping BioProject fetch")
+    }
 
-    if (PIPELINE_INITIALISATION.out.sra_accessions) {
+    if (params.bioproject && PIPELINE_INITIALISATION.out.sra_accessions) {
         FLUSRA(PIPELINE_INITIALISATION.out.sra_accessions)
+    } else if (params.sra_accessions) {
+        Channel.fromPath(params.sra_accessions)
+            .splitText()
+            .map { it.trim() }
+            .set { sra_accessions_ch }
+
+        sra_accessions_ch | ifEmpty { error "No SRA accessions provided" }
+
+        FLUSRA(sra_accessions_ch)
     } else {
         log.info("No additional SRA accessions to process")
     }
     PIPELINE_COMPLETION()
 }
-

@@ -10,7 +10,7 @@ process FETCH_SRA_METADATA {
     path sra_metadata_file
 
     output:
-    path "*_new.csv", emit: new_sra_metadata_file, optional: true
+    path "*_new.txt", emit: new_sra_metadata_file, optional: true
     path "*_updated.csv", emit: updated_sra_metadata_file, optional: true
 
     script:

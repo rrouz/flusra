@@ -116,7 +116,7 @@ def main():
     
     prev_metadata = pd.read_csv(args.metadata)
     
-    # Identify new SRAs not present in the previous metadata
+    # Identify new SRAs not present in the previous metadata.
     new_sras = new_metadata[~new_metadata['Run'].isin(prev_metadata['Run'])]
     
     if new_sras.empty:
@@ -129,7 +129,9 @@ def main():
         
         # Save the updated metadata
         combined_metadata.to_csv(args.metadata.replace('.csv', '_updated.csv'), index=False)
-        new_sras.to_csv(args.metadata.replace('.csv', '_new.csv'), index=False)
+        # new_sras.to_csv(args.metadata.replace('.csv', '_new.csv'), index=False)
+        # save only the SRA run IDs to a text file.
+        new_sras['Run'].to_csv(args.metadata.replace('.csv', '_new.txt'), index=False, header=False)
 
 if __name__ == "__main__":
     main()

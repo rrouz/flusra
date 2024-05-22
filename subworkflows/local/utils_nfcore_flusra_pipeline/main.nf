@@ -27,8 +27,8 @@ workflow PIPELINE_INITIALISATION {
 
     FETCH_SRA_METADATA(bioproject, email, sra_metadata_file)
 
-    FETCH_SRA_METADATA.out.new_sra_metadata_file.splitCsv(header: true)
-        .map { row -> row['Run'] }
+    FETCH_SRA_METADATA.out.new_sra_metadata_file.splitText()
+        .map { it.trim() }
         .set { sra_accessions_ch }
 
     emit:
