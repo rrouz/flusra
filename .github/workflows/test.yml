@@ -1,0 +1,44 @@
+name: Test nextflow pipeline
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  process_sra:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash -el {0}
+    env:
+      NXF_VER: "23.04.1"
+      NXF_WORK: ${{ github.workspace }}/work
+    steps:
+      - name: Cache envs
+        id: cache-envs
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.NXF_WORK }}/conda
+            /opt/hostedtoolcache/nextflow/${{ env.NXF_VER }}
+          key: env-${{ env.NXF_VER }}
+          restore-keys: |
+            env-${{ env.NXF_VER }}
+            env-
+      - name: Setup for conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: 3.11
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
+          activate-environment: anaconda-client-env
+      - name: Setup nextflow
+        uses: nf-core/setup-nextflow@v2
+        with:
+          version: ${{ env.NXF_VER }}
+      - name: Run nextflow
+        run: bash run_test.sh
