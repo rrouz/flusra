@@ -17,6 +17,8 @@ jobs:
       NXF_VER: "23.04.1"
       NXF_WORK: ${{ github.workspace }}/work
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Cache envs
         id: cache-envs
         uses: actions/cache@v4
