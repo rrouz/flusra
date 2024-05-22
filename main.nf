@@ -11,25 +11,23 @@ workflow {
         log.info("Skipping BioProject fetch")
     }
 
-    if (params.only_fetch) {
-        log.info("Only fetching BioProject data, exiting")
-        PIPELINE_COMPLETION()
-        exit 0
-    }
+    if (!params.only_fetch) {
+        if (params.bioproject && PIPELINE_INITIALISATION.out.sra_accessions) {
+            FLUSRA(PIPELINE_INITIALISATION.out.sra_accessions)
+        } else if (params.sra_accessions) {
+            Channel.fromPath(params.sra_accessions)
+                .splitText()
+                .map { it.trim() }
+                .set { sra_accessions_ch }
 
-    if (params.bioproject && PIPELINE_INITIALISATION.out.sra_accessions) {
-        FLUSRA(PIPELINE_INITIALISATION.out.sra_accessions)
-    } else if (params.sra_accessions) {
-        Channel.fromPath(params.sra_accessions)
-            .splitText()
-            .map { it.trim() }
-            .set { sra_accessions_ch }
+            sra_accessions_ch | ifEmpty { error "No SRA accessions provided" }
 
-        sra_accessions_ch | ifEmpty { error "No SRA accessions provided" }
-
-        FLUSRA(sra_accessions_ch)
+            FLUSRA(sra_accessions_ch)
+        } else {
+            log.info("No additional SRA accessions to process")
+        }
     } else {
-        log.info("No additional SRA accessions to process")
+        log.info("Skipping SRA download and processing")
     }
     PIPELINE_COMPLETION()
 }
