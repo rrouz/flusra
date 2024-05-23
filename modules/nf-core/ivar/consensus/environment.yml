@@ -5,3 +5,4 @@ channels:
 dependencies:
   - ivar=1.4.2
   - samtools=1.19.2
+  - htslib=1.19.1
