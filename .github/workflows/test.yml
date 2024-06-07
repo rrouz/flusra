@@ -43,4 +43,4 @@ jobs:
         with:
           version: ${{ env.NXF_VER }}
       - name: Run nextflow
-        run: cd ${{ github.workspace }} && bash run_test.sh
+        run: cd ${{ github.workspace }} && make test
