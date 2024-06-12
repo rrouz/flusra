@@ -18,7 +18,7 @@ process IVAR_CONSENSUS {
     """
     samtools index $bamFile
 
-    samtools mpileup --reference $reference -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar consensus -p ${sra}_${gene}_cns -t 0.5 -m 1
+    samtools mpileup -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar consensus -p ${sra}_${gene}_cns -t 0.5 -m 1
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
