@@ -7,20 +7,25 @@ include { SRATOOLS_FASTERQDUMP    } from '../modules/nf-core/sratools/fasterqdum
 workflow FLUSRA {
     take:
     sra_accessions_ch
+    fetch_and_pull
 
     main:
 
-    SRATOOLS_FASTERQDUMP(sra_accessions_ch)
+    if (fetch_and_pull) {
+        SRATOOLS_FASTERQDUMP(sra_accessions_ch)
+    } else {
+        SRATOOLS_FASTERQDUMP(sra_accessions_ch)
 
-    BWA_MEM(SRATOOLS_FASTERQDUMP.out.reads, params.reference)
+        BWA_MEM(SRATOOLS_FASTERQDUMP.out.reads, params.reference)
 
-    // make this a tuple of reference and gene
-    Channel.from(readFastaHeaders(params.reference))
-        .set { headers_ch }
+        // make this a tuple of reference and gene
+        Channel.from(readFastaHeaders(params.reference))
+            .set { headers_ch }
 
-    IVAR_CONSENSUS(headers_ch, BWA_MEM.out.bam, params.reference)
-    IVAR_VARIANTS(headers_ch, BWA_MEM.out.bam, params.reference)
-    SAMTOOLS_DEPTH(headers_ch, BWA_MEM.out.bam, params.reference)
+        IVAR_CONSENSUS(headers_ch, BWA_MEM.out.bam, params.reference)
+        IVAR_VARIANTS(headers_ch, BWA_MEM.out.bam, params.reference)
+        SAMTOOLS_DEPTH(headers_ch, BWA_MEM.out.bam, params.reference)
+    }
 }
 
 def readFastaHeaders(fastaFile) {

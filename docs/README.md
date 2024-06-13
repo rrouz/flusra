@@ -11,6 +11,7 @@ nextflow run https://github.com/gp201/flusra.git -r 'main' -c /nextflow.config -
 - `bioproject`: The BioProject ID to fetch the data from NCBI.
 - `email`: The email address to use for the NCBI API.
 - `only_fetch`: If `true`, only fetch the metadata from NCBI and save it to the `outdir` directory.
+- `fetch_and_pull`: If `true`, fetch the metadata from NCBI and pulls the new data from SRA.
 - `metadata`: Provide an existing metadata file to bypass processing already processed SRA data
 - `reference`: The reference genome to use for mapping.
 - `sra_accessions`: The SRA accessions to process. Provide a list of SRA accessions to process without a BioProject ID skips fetching metadata.

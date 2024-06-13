@@ -13,7 +13,7 @@ workflow {
 
     if (!params.only_fetch) {
         if (params.bioproject && PIPELINE_INITIALISATION.out.sra_accessions) {
-            FLUSRA(PIPELINE_INITIALISATION.out.sra_accessions)
+            FLUSRA(PIPELINE_INITIALISATION.out.sra_accessions, params.fetch_and_pull)
         } else if (params.sra_accessions) {
             Channel.fromPath(params.sra_accessions)
                 .splitText()
@@ -22,7 +22,7 @@ workflow {
 
             sra_accessions_ch | ifEmpty { error "No SRA accessions provided" }
 
-            FLUSRA(sra_accessions_ch)
+            FLUSRA(sra_accessions_ch, params.fetch_and_pull)
         } else {
             log.info("No additional SRA accessions to process")
         }
