@@ -63,8 +63,9 @@ def get_new_srps(search_term, email):
         data['Assay Type'] = root0.find('.//LIBRARY_STRATEGY').text
         data['AvgSpotLen'] = root0.find('.//Statistics/Read[@index="0"]').attrib['average']
         data['Bases'] = root0.find('.//RUN_SET').attrib['bases']
-        data['BioProject'] = root0.find('.//STUDY_REF').attrib['accession']
-        data['BioSample'] = root0.find('.//SAMPLE_DESCRIPTOR').attrib['accession']
+        data['BioProject'] = root0.find('.//EXTERNAL_ID[@namespace="BioProject"]').text
+        data['BioSample'] = root0.find('.//EXTERNAL_ID[@namespace="BioSample"]').text
+        data['BioSample Accession'] = root0.find('.//SAMPLE_DESCRIPTOR').attrib['accession']
         data['BioSampleModel'] = root0.find('.//SAMPLE_ATTRIBUTE[TAG="BioSampleModel"]/VALUE').text
         data['Bytes'] = root0.find('.//RUN').attrib['size']
         data['Center Name'] = root0.find('.//SUBMISSION').attrib['center_name']

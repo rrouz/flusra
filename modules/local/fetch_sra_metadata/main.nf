@@ -16,7 +16,7 @@ process FETCH_SRA_METADATA {
     script:
     """
     fetch_sra_metadata.py \\
-        --bioproject_ids ${bioproject_id} \\
+        --bioproject_ids "${bioproject_id}" \\
         --email ${email} \\
         --metadata ${sra_metadata_file}
     """
