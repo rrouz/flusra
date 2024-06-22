@@ -14,6 +14,7 @@ def get_new_srps(search_term, email):
     Entrez.email = email
 
     # Search for SRA submissions
+    print(f"Searching for SRA submissions with the term: {search_term}")
     handle = Entrez.esearch(db="sra", idtype='acc', retmax=4000, sort='recently_added', term=search_term)
     record = Entrez.read(handle)
     handle.close()
@@ -104,14 +105,20 @@ def get_new_srps(search_term, email):
 def parse_args():
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description='Fetch SRA metadata for a BioProject.')
-    parser.add_argument('-b', '--bioproject_id', type=str, required=True, help='BioProject ID to monitor')
+    parser.add_argument('-b', '--bioproject_ids', type=str, required=True, help='BioProject ID to monitor. Multiple IDs should be separated by commas.')
     parser.add_argument('-e', '--email', type=str, required=True, help='Email address for Entrez')
     parser.add_argument('-m', '--metadata', type=str, required=True, help='Path to old metadata file')
     return parser.parse_args()
 
 def main():
     args = parse_args()
-    search_term = f"{args.bioproject_id}[BioProject]"
+    # Read BioProject IDs from file
+    bioproject_ids = args.bioproject_ids.split(',')
+    bioproject_ids = [id.strip() for id in bioproject_ids if id.strip()]
+    if len(bioproject_ids) == 1:
+        search_term = f"{bioproject_ids[0]}[BioProject]"
+    else:
+        search_term = f"{' OR '.join([f'{id}[BioProject]' for id in bioproject_ids])}"
     new_metadata = get_new_srps(search_term, args.email)
     
     prev_metadata = pd.read_csv(args.metadata)
