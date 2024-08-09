@@ -86,7 +86,7 @@ def get_new_srps(search_term, email):
         data['LibrarySelection'] = root0.find('.//LIBRARY_SELECTION').text
         data['LibrarySource'] = root0.find('.//LIBRARY_SOURCE').text
         data['Organism'] = root0.find('.//SAMPLE_NAME/SCIENTIFIC_NAME').text
-        data['Platform'] = root0.find('.//PLATFORM').tag
+        data['Platform'] = root0.find('.//PLATFORM')[0].tag
         data['ReleaseDate'] = root0.find('.//RUN').attrib['published']
         data['create_date'] = '2024-04-20T18:12:00Z'  # Assuming based on provided data
         data['version'] = '1'  # Assuming based on provided data
