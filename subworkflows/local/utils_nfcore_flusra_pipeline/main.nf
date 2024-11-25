@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the flusra/flusra pipeline
+// A subworkflow providing utility functions tailored for the flusra/flusra pipeline.
 //
 
 /*
@@ -31,8 +31,13 @@ workflow PIPELINE_INITIALISATION {
         .map { it.trim() }
         .set { sra_accessions_ch }
 
+    FETCH_SRA_METADATA.out.new_milk_sra_metadata_file.splitText()
+        .map { it.trim() }
+        .set { milk_samples_ch }
+
     emit:
     sra_accessions = sra_accessions_ch
+    milk_samples = milk_samples_ch
 }
 
 /*

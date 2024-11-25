@@ -140,6 +140,18 @@ def main():
         # new_sras.to_csv(args.metadata.replace('.csv', '_new.csv'), index=False)
         # save only the SRA run IDs to a text file.
         new_sras['Run'].to_csv(args.metadata.replace('.csv', '_new.txt'), index=False, header=False)
+        # extract if 'isolation_source' contains milk in it
+        new_sras[new_sras['isolation_source'].str.contains(
+            'milk',
+            case=False,
+            na=False
+        )].to_csv(
+            args.metadata.replace(
+                '.csv',
+                '_milk_samples.txt'),
+            index=False
+        )
+
 
 if __name__ == "__main__":
     main()
