@@ -145,7 +145,7 @@ def main():
             'milk',
             case=False,
             na=False
-        )].to_csv(
+        )]['Run'].to_csv(
             args.metadata.replace(
                 '.csv',
                 '_milk_samples.txt'),
