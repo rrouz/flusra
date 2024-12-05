@@ -8,26 +8,31 @@ workflow {
     if (params.bioproject) {
         PIPELINE_INITIALISATION(params.bioproject, params.email, params.metadata)
     } else {
-        log.info("Skipping BioProject fetch")
+        log.info("Skipping BioProject fetch as no BioProject ID provided")
     }
 
     if (!params.only_fetch) {
         if (params.bioproject && PIPELINE_INITIALISATION.out.sra_accessions) {
             FLUSRA(PIPELINE_INITIALISATION.out.sra_accessions, PIPELINE_INITIALISATION.out.milk_samples, params.fetch_and_pull)
-        } else if (params.sra_accessions) {
+        } else if (params.sra_accessions || params.milk_sra_accessions) {
             Channel.fromPath(params.sra_accessions)
                 .splitText()
                 .map { it.trim() }
                 .set { sra_accessions_ch }
 
-            Channel.fromPath(params.milk_samples)
+            Channel.fromPath(params.milk_sra_accessions)
                 .splitText()
                 .map { it.trim() }
-                .set { milk_samples_ch }
+                .set { milk_sra_accessions_ch }
 
-            sra_accessions_ch | ifEmpty { error "No SRA accessions provided" }
+            sra_accessions_ch.concat(milk_sra_accessions_ch)
+                .ifEmpty {
+                    log.error("No SRA accessions provided or milk samples provided")
+                    exit 1
+                }
+                .view()
 
-            FLUSRA(sra_accessions_ch, milk_samples_ch, params.fetch_and_pull)
+            FLUSRA(sra_accessions_ch, milk_sra_accessions_ch, params.fetch_and_pull)
         } else {
             log.info("No additional SRA accessions to process")
         }
