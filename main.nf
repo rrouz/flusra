@@ -26,6 +26,7 @@ workflow {
                 .set { milk_sra_accessions_ch }
 
             sra_accessions_ch.concat(milk_sra_accessions_ch)
+                .unique()
                 .ifEmpty {
                     log.error("No SRA accessions provided or milk samples provided")
                     exit 1
