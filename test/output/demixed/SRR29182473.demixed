@@ -1,5 +1,5 @@
 	SRR29182473_variants.tsv
-summarized	[('Other', np.float64(0.9999998847606602))]
+summarized	[('Other', 0.9999998847606602)]
 lineages	H5Nx-2.3.4.4b
 abundances	0.99999988
 resid	29.837283664486716
