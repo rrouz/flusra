@@ -18,7 +18,7 @@ workflow PROCESS_SRA {
             .set { headers_ch }
 
     IVAR_CONSENSUS(headers_ch, BWA_MEM.out.bam, reference)
-    IVAR_VARIANTS(headers_ch, BWA_MEM.out.bam, reference)
+    IVAR_VARIANTS(headers_ch, BWA_MEM.out.bam, reference, params.gff_files)
     SAMTOOLS_DEPTH(headers_ch, BWA_MEM.out.bam, reference)
 }
 
