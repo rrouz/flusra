@@ -149,7 +149,8 @@ def main():
             args.metadata.replace(
                 '.csv',
                 '_milk_samples.txt'),
-            index=False
+            index=False,
+            header=False
         )
 
 

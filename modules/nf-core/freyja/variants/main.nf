@@ -1,6 +1,6 @@
 process FREYJA_VARIANTS {
     tag "$sra"
-    label 'process_high'
+    label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
 

@@ -1,6 +1,6 @@
 process IVAR_CONSENSUS {
     tag "$sra - $referenceGene"
-    label 'process_high'
+    label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
 

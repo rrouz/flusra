@@ -15,15 +15,25 @@ workflow {
         if (params.bioproject && PIPELINE_INITIALISATION.out.sra_accessions) {
             FLUSRA(PIPELINE_INITIALISATION.out.sra_accessions, PIPELINE_INITIALISATION.out.milk_samples, params.fetch_and_pull)
         } else if (params.sra_accessions || params.milk_sra_accessions) {
-            Channel.fromPath(params.sra_accessions)
-                .splitText()
-                .map { it.trim() }
-                .set { sra_accessions_ch }
+            // check if sra_accessions is not null
+            if (params.sra_accessions != null) {
+                Channel.fromPath(params.sra_accessions)
+                    .splitText()
+                    .map { it.trim() }
+                    .set { sra_accessions_ch }
+            } else {
+                sra_accessions_ch = Channel.empty()
+            }
 
-            Channel.fromPath(params.milk_sra_accessions)
-                .splitText()
-                .map { it.trim() }
-                .set { milk_sra_accessions_ch }
+            // check if milk_sra_accessions is not null
+            if (params.milk_sra_accessions != null) {
+                Channel.fromPath(params.milk_sra_accessions)
+                    .splitText()
+                    .map { it.trim() }
+                    .set { milk_sra_accessions_ch }
+            } else {
+                milk_sra_accessions_ch = Channel.empty()
+            }
 
             sra_accessions_ch.concat(milk_sra_accessions_ch)
                 .unique()

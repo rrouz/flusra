@@ -1,6 +1,6 @@
 process FETCH_SRA_METADATA {
     tag "Fetch SRA metadata"
-    label "process_high"
+    label "process_medium"
 
     conda "${moduleDir}/environment.yml"
 
