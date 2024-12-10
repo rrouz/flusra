@@ -10,7 +10,7 @@
 
 include { FREYJA_VARIANTS         } from '../../../modules/nf-core/freyja/variants'
 include { FREYJA_DEMIX            } from '../../../modules/nf-core/freyja/demix'
-include { BWA_MEM as BWA_MEM_MILK } from '../../../modules/nf-core/bwa/mem/main'
+include { MINIMAP2_ALIGN          } from '../../../modules/nf-core/minimap2/align'
 
 workflow MILK_FREYJA {
     take:
@@ -19,7 +19,7 @@ workflow MILK_FREYJA {
     reference
 
     main:
-    BWA_MEM_MILK(reads, reference)
-    FREYJA_VARIANTS(BWA_MEM_MILK.out.bam, reference)
+    MINIMAP2_ALIGN(reads, reference)
+    FREYJA_VARIANTS(MINIMAP2_ALIGN.out.bam, reference)
     FREYJA_DEMIX(FREYJA_VARIANTS.out.variants, barcode)
 }
