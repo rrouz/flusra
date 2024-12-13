@@ -23,7 +23,7 @@ def get_new_srps(search_term, email):
     retries = 2
     for attempt in range(retries):
         try:
-            handle = Entrez.efetch(db="sra", id=record['IdList'], rettype="gb", retmode='text')
+            handle = Entrez.efetch(db="sra", id=record['IdList'], rettype="full", retmode='text')
             returned_meta = handle.read().decode('UTF-8')
             handle.close()
             break
@@ -45,60 +45,184 @@ def get_new_srps(search_term, email):
         time.sleep(10)
         root = ET.fromstring(returned_meta)
     
-    fields = [
-            'Run', 'Assay Type', 'AvgSpotLen', 'Bases', 'BioProject', 'BioSample', 'BioSampleModel', 
-            'Bytes', 'Center Name', 'Collection_Date', 'Consent', 'DATASTORE filetype', 
-            'DATASTORE provider', 'DATASTORE region', 'Experiment', 'geo_loc_name_country', 
-            'geo_loc_name_country_continent', 'geo_loc_name', 'Host', 'Instrument', 'isolate', 
-            'Library Name', 'LibraryLayout', 'LibrarySelection', 'LibrarySource', 'Organism', 
-            'Platform', 'ReleaseDate', 'create_date', 'version', 'Sample Name', 'SRA Study', 
-            'serotype', 'isolation_source'
-        ]
+    fields = {
+        'Run' : {
+            'find' : './/RUN',
+            'attrib' : 'accession'
+        },
+        'Assay Type' : {
+            'find' : './/LIBRARY_STRATEGY',
+            'text' : True
+        },
+        'AvgSpotLen' : {
+            'find' : './/Statistics/Read[@index="0"]',
+            'attrib' : 'average'
+        },
+        'Bases' : {
+            'find' : './/RUN_SET',
+            'attrib' : 'bases'
+        },
+        'BioProject' : {
+            'find' : './/EXTERNAL_ID[@namespace="BioProject"]',
+            'text' : True
+        },
+        'BioSample' : {
+            'find' : './/EXTERNAL_ID[@namespace="BioSample"]',
+            'text' : True
+        },
+        'BioSample Accession' : {
+            'find' : './/SAMPLE_DESCRIPTOR',
+            'attrib' : 'accession'
+        },
+        'BioSampleModel' : {
+            'find' : './/SAMPLE_ATTRIBUTE[TAG="BioSampleModel"]/VALUE',
+            'text' : True
+        },
+        'Bytes' : {
+            'find' : './/RUN',
+            'attrib' : 'size'
+        },
+        'Center Name' : {
+            'find' : './/SUBMISSION',
+            'attrib' : 'center_name'
+        },
+        'Collection_Date' : {
+            'find' : './/SAMPLE_ATTRIBUTE[TAG="collection_date"]/VALUE',
+            'text' : True
+        },
+        'Consent' : {
+            'find' : './/SRAFile',
+            'attrib' : 'cluster'
+
+        },
+        'DATASTORE filetype' : {
+            'find' : './/CloudFile',
+            'attrib' : 'filetype'
+        },
+        'DATASTORE provider' : {
+            'find' : './/CloudFile',
+            'attrib' : 'provider'
+        },
+        'DATASTORE region' : {
+            'find' : './/CloudFile',
+            'attrib' : 'location'
+        },
+        'Experiment' : {
+            'find' : './/EXPERIMENT',
+            'attrib' : 'accession'
+        },
+        'geo_loc_name_country' : {
+            'find' : './/SAMPLE_ATTRIBUTE[TAG="geo_loc_name"]/VALUE',
+            'text' : True
+        },
+        'geo_loc_name_country_continent' : {
+            'find' : './/SAMPLE_ATTRIBUTE[TAG="geo_loc_name_country_continent"]/VALUE',
+            'default' : 'North America'
+        },
+        'geo_loc_name' : {
+            'find' : './/SAMPLE_ATTRIBUTE[TAG="geo_loc_name"]/VALUE',
+            'text' : True
+        },
+        'Host' : {
+            'find' : './/SAMPLE_ATTRIBUTE[TAG="host"]/VALUE',
+            'text' : True
+        },
+        'Instrument' : {
+            'find' : './/INSTRUMENT_MODEL',
+            'text' : True
+        },
+        'isolate' : {
+            'find' : './/SAMPLE_ATTRIBUTE[TAG="isolate"]/VALUE',
+            'text' : True
+        },
+        'Library Name' : {
+            'find' : './/LIBRARY_NAME',
+            'text' : True
+        },
+        'LibraryLayout' : {
+            'find' : './/PAIRED',
+            'text' : False
+        },
+        'LibrarySelection' : {
+            'find' : './/LIBRARY_SELECTION',
+            'text' : True
+        },
+        'LibrarySource' : {
+            'find' : './/LIBRARY_SOURCE',
+            'text' : True
+        },
+        'Organism' : {
+            'find' : './/SAMPLE_NAME/SCIENTIFIC_NAME',
+            'text' : True
+        },
+        'Platform' : {
+            'find' : './/PLATFORM',
+            'text' : False
+        },
+        'ReleaseDate' : {
+            'find' : './/RUN',
+            'attrib' : 'published'
+        },
+        'create_date' : {
+            'find' : './/SRAFile',
+            'attrib' : 'date'
+        },
+        'version' : {
+            'find' : './/SRAFile',
+            'attrib' : 'version'
+        },
+        'Sample Name' : {
+            'find' : './/SAMPLE',
+            'attrib' : 'alias'
+        },
+        'SRA Study' : {
+            'find' : './/STUDY',
+            'attrib' : 'accession'
+        },
+        'serotype' : {
+            'find' : './/SAMPLE_ATTRIBUTE[TAG="serotype"]/VALUE',
+            'text' : True
+        },
+        'isolation_source' : {
+            'find' : './/SAMPLE_ATTRIBUTE[TAG="isolation_source"]/VALUE',
+            'text' : True
+        }
+    }
 
     allDictVals = {}
+
     for root0 in tqdm(root.findall('.//EXPERIMENT_PACKAGE')):
         # Initialize a dictionary to store the extracted data
-        data = {field: '' for field in fields}
-        data['Run'] = root0.find('.//RUN').attrib['accession']
-        data['Assay Type'] = root0.find('.//LIBRARY_STRATEGY').text
-        data['AvgSpotLen'] = root0.find('.//Statistics/Read[@index="0"]').attrib['average']
-        data['Bases'] = root0.find('.//RUN_SET').attrib['bases']
-        data['BioProject'] = root0.find('.//EXTERNAL_ID[@namespace="BioProject"]').text
-        data['BioSample'] = root0.find('.//EXTERNAL_ID[@namespace="BioSample"]').text
-        data['BioSample Accession'] = root0.find('.//SAMPLE_DESCRIPTOR').attrib['accession']
-        data['BioSampleModel'] = root0.find('.//SAMPLE_ATTRIBUTE[TAG="BioSampleModel"]/VALUE').text
-        data['Bytes'] = root0.find('.//RUN').attrib['size']
-        data['Center Name'] = root0.find('.//SUBMISSION').attrib['center_name']
-        data['Collection_Date'] = root0.find('.//SAMPLE_ATTRIBUTE[TAG="collection_date"]/VALUE').text
-        data['Consent'] = 'public'  # Assuming consent is public based on provided data
-        data['DATASTORE filetype'] = 'sra,run.zq,fastq'  # Assuming these filetypes based on provided data
-        data['DATASTORE provider'] = 'ncbi,gs,s3'  # Assuming these providers based on provided data
-        data['DATASTORE region'] = 'ncbi.public,s3.us-east-1,gs.us-east1'  # Assuming these regions based on provided data
-        data['Experiment'] = root0.find('.//EXPERIMENT').attrib['accession']
-        data['geo_loc_name_country'] = root0.find('.//SAMPLE_ATTRIBUTE[TAG="geo_loc_name"]/VALUE').text
-        data['geo_loc_name_country_continent'] = 'North America'  # Assuming based on provided data
-        data['geo_loc_name'] = root0.find('.//SAMPLE_ATTRIBUTE[TAG="geo_loc_name"]/VALUE').text
-        data['Host'] = root0.find('.//SAMPLE_ATTRIBUTE[TAG="host"]/VALUE').text
-        data['Instrument'] = root0.find('.//INSTRUMENT_MODEL').text
-        data['isolate'] = root0.find('.//SAMPLE_ATTRIBUTE[TAG="isolate"]/VALUE').text
-        data['Library Name'] = root0.find('.//LIBRARY_NAME').text
-        data['LibraryLayout'] = 'PAIRED'  # Assuming based on provided data
-        data['LibrarySelection'] = root0.find('.//LIBRARY_SELECTION').text
-        data['LibrarySource'] = root0.find('.//LIBRARY_SOURCE').text
-        data['Organism'] = root0.find('.//SAMPLE_NAME/SCIENTIFIC_NAME').text
-        data['Platform'] = root0.find('.//PLATFORM')[0].tag
-        data['ReleaseDate'] = root0.find('.//RUN').attrib['published']
-        data['create_date'] = '2024-04-20T18:12:00Z'  # Assuming based on provided data
-        data['version'] = '1'  # Assuming based on provided data
-        data['Sample Name'] = root0.find('.//SAMPLE').attrib['alias']
-        data['SRA Study'] = root0.find('.//STUDY').attrib['accession']
-        data['serotype'] = 'H5N1'  # Assuming based on provided data
-        data['isolation_source'] = root0.find('.//SAMPLE_ATTRIBUTE[TAG="isolation_source"]/VALUE').text
+        try:
+            data = {field: '' for field in fields}
+            for field in fields:
+                if isinstance(fields[field], dict):
+                    try:
+                        if 'DATASTORE' in field:
+                            value = []
+                            for child in root0.findall(fields[field]['find']):
+                                val = child.attrib[fields[field]['attrib']]
+                                if val:
+                                    value.append(val)
+                            data[field] = ','.join(list(set(value)))
+                            continue
+                        if 'attrib' in fields[field]:
+                            data[field] = root0.find(fields[field]['find']).attrib[fields[field]['attrib']]
+                        elif 'text' in fields[field] and fields[field]['text']:
+                            data[field] = root0.find(fields[field]['find']).text
+                        elif 'text' in fields[field] and not fields[field]['text']:
+                            data[field] = root0.find(fields[field]['find']).tag
+                    except AttributeError:
+                        data[field] = ''
+                else:
+                    data[field] = ''
+        except AttributeError:
+            print(f"Error parsing data for {root0.__dict__}")
 
-        allDictVals[data['Run']] = {k: v for k, v in data.items() if k != 'Run'}
-        
+        allDictVals[data['Run']] = {k: v for k, v in data.items() if k != 'Run'}        
 
-    metadata = pd.DataFrame.from_dict(allDictVals, orient='index')
+    metadata = pd.DataFrame.from_dict(allDictVals, orient='index', columns=[k for k in fields.keys() if k != 'Run'])
+    print(metadata['DATASTORE region'])
     metadata.reset_index(inplace=True)
     metadata.rename(columns={'index': 'Run'}, inplace=True)
     return metadata
@@ -113,7 +237,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    # Read BioProject IDs from file
+     # Process BioProject IDs
     bioproject_ids = args.bioproject_ids.split(',')
     bioproject_ids = [id.strip() for id in bioproject_ids if id.strip()]
     if len(bioproject_ids) == 1:
@@ -124,7 +248,7 @@ def main():
     
     prev_metadata = pd.read_csv(args.metadata)
     
-    # Identify new SRAs not present in the previous metadata.
+    # Identify new SRA runs not in the previous metadata
     new_sras = new_metadata[~new_metadata['Run'].isin(prev_metadata['Run'])]
     
     if new_sras.empty:
@@ -135,12 +259,11 @@ def main():
         # Combine the old and new metadata
         combined_metadata = pd.concat([prev_metadata, new_sras])
         
-        # Save the updated metadata
+        # Save updated metadata
         combined_metadata.to_csv(args.metadata.replace('.csv', '_updated.csv'), index=False)
-        # new_sras.to_csv(args.metadata.replace('.csv', '_new.csv'), index=False)
-        # save only the SRA run IDs to a text file.
+        # Save only the new SRA run IDs to a text file
         new_sras['Run'].to_csv(args.metadata.replace('.csv', '_new.txt'), index=False, header=False)
-        # extract if 'isolation_source' contains milk in it
+        # Extract runs where 'isolation_source' contains "milk"
         new_sras[new_sras['isolation_source'].str.contains(
             'milk',
             case=False,
