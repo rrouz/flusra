@@ -9,6 +9,8 @@ process IVAR_VARIANTS {
     tuple val(sra), path(bamFile)
     path reference
     val gff_files
+    val variant_threshold
+    val variant_min_depth
 
     output:
     path "*_variants.tsv",         emit: variants
@@ -29,7 +31,7 @@ process IVAR_VARIANTS {
     """
     samtools index $bamFile
 
-    samtools mpileup --reference $reference -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar variants -p ${sra}_${gene}_variants -t 0.01 -m 1 -r $reference $gff_file_arg
+    samtools mpileup --reference $reference -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar variants -p ${sra}_${gene}_variants -t $variant_threshold -m $variant_min_depth -r $reference $gff_file_arg
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
