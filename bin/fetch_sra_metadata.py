@@ -222,7 +222,6 @@ def get_new_srps(search_term, email):
         allDictVals[data['Run']] = {k: v for k, v in data.items() if k != 'Run'}        
 
     metadata = pd.DataFrame.from_dict(allDictVals, orient='index', columns=[k for k in fields.keys() if k != 'Run'])
-    print(metadata['DATASTORE region'])
     metadata.reset_index(inplace=True)
     metadata.rename(columns={'index': 'Run'}, inplace=True)
     return metadata

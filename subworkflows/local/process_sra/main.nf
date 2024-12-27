@@ -17,8 +17,8 @@ workflow PROCESS_SRA {
 	Channel.from(readFastaHeaders(reference))
             .set { headers_ch }
 
-    IVAR_CONSENSUS(headers_ch, BWA_MEM.out.bam, reference)
-    IVAR_VARIANTS(headers_ch, BWA_MEM.out.bam, reference)
+    IVAR_CONSENSUS(headers_ch, BWA_MEM.out.bam, reference, params.consensus_threshold, params.consensus_min_depth)
+    IVAR_VARIANTS(headers_ch, BWA_MEM.out.bam, reference, params.gff_files, params.variant_threshold, params.variant_min_depth)
     SAMTOOLS_DEPTH(headers_ch, BWA_MEM.out.bam, reference)
 }
 

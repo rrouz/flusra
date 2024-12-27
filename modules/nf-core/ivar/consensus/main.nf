@@ -8,6 +8,8 @@ process IVAR_CONSENSUS {
     each referenceGene
     tuple val(sra), path(bamFile)
     path reference
+    val consensus_threshold
+    val consensus_min_depth
 
     output:
     path  "*_cns.fa",         emit: consensus
@@ -18,7 +20,7 @@ process IVAR_CONSENSUS {
     """
     samtools index $bamFile
 
-    samtools mpileup -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar consensus -p ${sra}_${gene}_cns -t 0.5 -m 1
+    samtools mpileup -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar consensus -p ${sra}_${gene}_cns -t $consensus_threshold -m $consensus_min_depth
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
