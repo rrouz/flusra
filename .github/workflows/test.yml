@@ -14,7 +14,7 @@ jobs:
       run:
         shell: bash -el {0}
     env:
-      NXF_VER: "23.04.1"
+      NXF_VER: "24.10.2"
       NXF_WORK: ${{ github.workspace }}/work
     steps:
       - name: Checkout code
@@ -35,7 +35,7 @@ jobs:
         with:
           python-version: 3.11
           mamba-version: "*"
-          channels: conda-forge,defaults
+          channels: conda-forge,bioconda,nodefaults
           channel-priority: true
           activate-environment: anaconda-client-env
       - name: Setup nextflow

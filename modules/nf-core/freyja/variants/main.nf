@@ -1,40 +1,43 @@
-process IVAR_CONSENSUS {
-    tag "$sra - $referenceGene"
+process FREYJA_VARIANTS {
+    tag "$sra"
     label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
 
     input:
-    each referenceGene
     tuple val(sra), path(bamFile)
     path reference
 
     output:
-    path  "*_cns.fa",         emit: consensus
+    tuple val(sra), path("${sra}_variants.tsv"), path("${sra}_depth.tsv") , emit: variants
     path  "versions.yml", emit: versions
 
     script:
-    def gene = referenceGene.split("\\|")[0]
     """
     samtools index $bamFile
 
-    samtools mpileup -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar consensus -p ${sra}_${gene}_cns -t 0.5 -m 1
+    freyja variants \\
+        $bamFile \\
+        --variants ${sra}_variants.tsv \\
+        --depths ${sra}_depth.tsv \\
+        --ref $reference
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
+        freyja: \$(echo \$(c --version 2>&1) | sed 's/^.*version //' )
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
-        ivar: \$(echo \$(ivar version 2>&1) | sed 's/^.*version //; s/Please.*\$//')
     END_VERSIONS
     """
 
     stub:
     """
-    touch ${sra}_${gene}_cns.fa
+    touch ${sra}_variant.tsv
+    touch ${sra}_depth.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
+        bwa: \$(echo \$(bwa 2>&1) | sed 's/^.*Version: //; s/Contact:.*\$//')
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
-        ivar: \$(echo \$(ivar version 2>&1) | sed 's/^.*version //; s/Please.*\$//')
     END_VERSIONS
     """
 }

@@ -1,0 +1,8 @@
+name: freyja_demix
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - freyja=1.5.2
+  - samtools=1.19.2
+  - htslib=1.19.1

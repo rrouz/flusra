@@ -1,6 +1,6 @@
 process IVAR_VARIANTS {
     tag "$sra - $referenceGene"
-    label 'process_high'
+    label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
 
