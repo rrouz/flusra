@@ -12,7 +12,7 @@ workflow {
     }
 
     if (!params.only_fetch) {
-        if (params.bioproject && PIPELINE_INITIALISATION.out.sra_accessions) {
+        if (params.bioproject && PIPELINE_INITIALISATION.out.samples_to_process) {
             FLUSRA(PIPELINE_INITIALISATION.out.samples_to_process)
         } else if (params.samples_to_process) {
             Channel.fromPath(params.samples_to_process)
