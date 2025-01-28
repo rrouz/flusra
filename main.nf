@@ -16,12 +16,16 @@ workflow {
             FLUSRA(PIPELINE_INITIALISATION.out.samples_to_process)
         } else if (params.samples_to_process) {
             Channel.fromPath(params.samples_to_process)
-                .splitCsv(header: true)
+                .splitCsv(header: true, sep: '\t')
                 .map { row ->
                     meta = [
                         id: row.Run.toString(),
                         process_flag: row.process_flag.toBoolean(),
                         milk_flag: row.is_milk.toBoolean(),
+                        trimming_flag: row.containsKey('global_trimming') && row.global_trimming
+                            ? new groovy.json.JsonSlurper()
+                                .parseText(row.global_trimming.replaceAll("'", '"'))
+                            : null
                     ]
                     [meta, row.Run]
                 }

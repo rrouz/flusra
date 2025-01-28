@@ -5,8 +5,8 @@ process IVAR_CONSENSUS {
     conda "${moduleDir}/environment.yml"
 
     input:
-    each referenceGene
     tuple val(meta), path(bamFile)
+    each referenceGene
     path reference
     val consensus_threshold
     val consensus_min_depth

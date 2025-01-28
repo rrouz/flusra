@@ -1,6 +1,6 @@
-name: freyja_variants
+name: fastp
 channels:
   - conda-forge
   - bioconda
 dependencies:
-  - freyja=1.5.2
+  - bioconda::fastp=0.24.0

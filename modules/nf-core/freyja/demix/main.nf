@@ -7,16 +7,22 @@ process FREYJA_DEMIX {
     input:
     tuple val(meta), path(variant), path(depth)
     path barcode
+    val demix_autoadapt
+    val demix_depthcutoff
 
     output:
     path "*.demixed",     emit: demixed
     path  "versions.yml", emit: versions
 
     script:
+    def autoadapt = demix_autoadapt ? "--autoadapt" : ""
+    def depth_cutoff = demix_depthcutoff ? "--depthcutoff $demix_depthcutoff" : ""
     """
     freyja demix \\
         $variant \\
         $depth \\
+        $autoadapt \\
+        $depth_cutoff \\
         --barcodes $barcode \\
         --output ${meta.id}.demixed
 

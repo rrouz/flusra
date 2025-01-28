@@ -5,10 +5,8 @@ process IVAR_VARIANTS {
     conda "${moduleDir}/environment.yml"
 
     input:
-    each referenceGene
-    tuple val(meta), path(bamFile)
+    tuple val(meta), path(bamFile), val(gene), val(referenceGene), path(gff)
     path reference
-    val gff_files
     val variant_threshold
     val variant_min_depth
 
@@ -17,17 +15,7 @@ process IVAR_VARIANTS {
     path  "versions.yml", emit: versions
 
     script:
-    def gene = referenceGene.split("\\|")[0]
-    def gff_file_arg = ""
-    if (!gff_files.isEmpty()) {
-        if (gff_files.containsKey(gene)) {
-            if (new File(gff_files[gene]).exists()) {
-                gff_file_arg = "-g ${gff_files[gene]}"
-            } else {
-                throw new Exception("GFF file for gene $gene does not exist at ${gff_files[gene]}")
-            }
-        }
-    }
+    def gff_file_arg = gff.name != "NO_FILE" ? "-g ${gff}" : ""
     """
     samtools index $bamFile
 

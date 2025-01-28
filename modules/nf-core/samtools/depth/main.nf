@@ -5,8 +5,8 @@ process SAMTOOLS_DEPTH {
     conda "${moduleDir}/environment.yml"
 
     input:
-    each referenceGene
     tuple val(meta), path(bamFile)
+    each referenceGene
     path reference
 
     output:

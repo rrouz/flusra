@@ -33,6 +33,10 @@ workflow PIPELINE_INITIALISATION {
                 id: row.Run.toString(),
                 process_flag: row.process_flag.toBoolean(),
                 milk_flag: row.is_milk.toBoolean(),
+                trimming_flag: row.containsKey('global_trimming') && row.global_trimming
+                            ? new groovy.json.JsonSlurper()
+                                .parseText(row.global_trimming.replaceAll("'", '"'))
+                            : null
             ]
             [meta, row.Run]
         }

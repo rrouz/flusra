@@ -1,4 +1,5 @@
 include { PROCESS_SRA             } from '../subworkflows/local/process_sra/main'
+include { FASTP                   } from '../modules/nf-core/fastp/main'
 include { SRATOOLS_FASTERQDUMP    } from '../modules/nf-core/sratools/fasterqdump/main'
 include { MILK_FREYJA             } from '../subworkflows/local/milk_freyja/main'
 
@@ -27,7 +28,23 @@ workflow FLUSRA {
         reads_ch = SRATOOLS_FASTERQDUMP.out.reads
     }
 
-    reads_ch.multiMap { meta, reads ->
+    reads_ch.branch { meta, fastq ->
+        doTrim: meta.trimming_flag
+            return tuple(meta, fastq,
+                meta.trimming_flag.front1,
+                meta.trimming_flag.front2,
+                meta.trimming_flag.tail1,
+                meta.trimming_flag.tail2
+            )
+        noTrim: true
+            return tuple(meta, fastq)
+    }.set { branchedFastqCh }
+
+    branchedFastqCh.doTrim | FASTP
+
+    output_ch = branchedFastqCh.noTrim.mix(FASTP.out.trimmed_reads)
+
+    output_ch.multiMap { meta, reads ->
         samples: meta.process_flag ? tuple(meta, reads) : null
         milk: meta.milk_flag ? tuple(meta, reads) : null
     }.set { sample_reads_input }

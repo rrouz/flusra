@@ -8,6 +8,7 @@ from tqdm import tqdm
 from Bio import Entrez
 import urllib.error
 import http.client
+import yaml
 
 def get_new_srps(search_term, email):
     """Fetch SRA metadata for a BioProject."""
@@ -15,7 +16,7 @@ def get_new_srps(search_term, email):
 
     # Search for SRA submissions
     print(f"Searching for SRA submissions with the term: {search_term}")
-    handle = Entrez.esearch(db="sra", idtype='acc', retmax=4000, sort='recently_added', term=search_term)
+    handle = Entrez.esearch(db="sra", idtype='acc', retmax=10000, sort='recently_added', term=search_term)
     record = Entrez.read(handle)
     handle.close()
 
@@ -23,7 +24,7 @@ def get_new_srps(search_term, email):
     retries = 2
     for attempt in range(retries):
         try:
-            handle = Entrez.efetch(db="sra", id=record['IdList'], rettype="full", retmode='text')
+            handle = Entrez.efetch(db="sra", id=record['IdList'], rettype="full", retmode='text', retmax=10000)
             returned_meta = handle.read().decode('UTF-8')
             handle.close()
             break
@@ -232,6 +233,7 @@ def parse_args():
     parser.add_argument('-b', '--bioproject_ids', type=str, required=True, help='BioProject ID to monitor. Multiple IDs should be separated by commas.')
     parser.add_argument('-e', '--email', type=str, required=True, help='Email address for Entrez')
     parser.add_argument('-m', '--metadata', type=str, required=True, help='Path to old metadata file')
+    parser.add_argument('-t', '--trimming_config', type=str, required=False, help='Path to trimming yaml file')
     return parser.parse_args()
 
 def main():
@@ -243,6 +245,7 @@ def main():
         search_term = f"{bioproject_ids[0]}[BioProject]"
     else:
         search_term = f"{' OR '.join([f'{id}[BioProject]' for id in bioproject_ids])}"
+
     new_metadata = get_new_srps(search_term, args.email)
     
     prev_metadata = pd.read_csv(args.metadata)
@@ -265,7 +268,19 @@ def main():
 
         new_sras['process_flag'] = True
 
-        new_sras[['Run', 'process_flag', 'is_milk']].to_csv(args.metadata.replace('.csv', '_to_process.csv'), index=False)
+        save_columns = ['Run', 'process_flag', 'is_milk']
+
+        if args.trimming_config:
+            with open(args.trimming_config, 'r') as f:
+                trimming_config = yaml.safe_load(f)
+            # if 'Assay Type' in new_sras contains 'amp' then check if project in trimming_config and set global trimming to that value
+            new_sras['global_trimming'] = new_sras[['BioProject', 'Assay Type']].apply(
+                lambda row: trimming_config.get(row['BioProject'], trimming_config['default']).get('global_trimming', None) if 'amp' in str(row['Assay Type']).lower() else None,
+                axis=1
+            )
+            save_columns.append('global_trimming')
+            
+        new_sras[save_columns].to_csv(args.metadata.replace('.csv', '_to_process.tsv'), index=False, sep='\t')
 
 
 if __name__ == "__main__":

@@ -19,5 +19,5 @@ workflow MILK_FREYJA {
     main:
     MINIMAP2_ALIGN(milk_samples_ch, params.milk_reference)
     FREYJA_VARIANTS(MINIMAP2_ALIGN.out.bam, params.milk_reference)
-    FREYJA_DEMIX(FREYJA_VARIANTS.out.variants, params.milk_barcode)
+    FREYJA_DEMIX(FREYJA_VARIANTS.out.variants, params.milk_barcode, params.demix_autoadapt, params.demix_depthcutoff)
 }
