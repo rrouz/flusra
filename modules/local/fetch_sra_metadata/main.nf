@@ -22,10 +22,20 @@ process FETCH_SRA_METADATA {
         --email ${email} \\
         --metadata ${sra_metadata_file} \\
         ${trim_config}
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+    END_VERSIONS
     """
 
     stub:
     """
-    touch ${sra_metadata_file}
+    touch ${sra_metadata_file}_updated.csv
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+    END_VERSIONS
     """
 }
