@@ -8,18 +8,17 @@ include { SRATOOLS_FASTERQDUMP    } from '../../../modules/nf-core/sratools/fast
 workflow PROCESS_SRA {
 	take:
 	sra_samples_ch
-	reference
 
 	main:
-	BWA_MEM(sra_samples_ch, reference)
+	BWA_MEM(sra_samples_ch, params.reference)
 
-	// Generate a tuple of reference and gene
-	Channel.from(readFastaHeaders(reference))
+	// Generate a tuple of params.reference and gene
+	Channel.from(readFastaHeaders(params.reference))
             .set { headers_ch }
 
-    IVAR_CONSENSUS(headers_ch, BWA_MEM.out.bam, reference, params.consensus_threshold, params.consensus_min_depth)
-    IVAR_VARIANTS(headers_ch, BWA_MEM.out.bam, reference, params.gff_files, params.variant_threshold, params.variant_min_depth)
-    SAMTOOLS_DEPTH(headers_ch, BWA_MEM.out.bam, reference)
+    IVAR_CONSENSUS(headers_ch, BWA_MEM.out.bam, params.reference, params.consensus_threshold, params.consensus_min_depth)
+    IVAR_VARIANTS(headers_ch, BWA_MEM.out.bam, params.reference, params.gff_files, params.variant_threshold, params.variant_min_depth)
+    SAMTOOLS_DEPTH(headers_ch, BWA_MEM.out.bam, params.reference)
 }
 
 def readFastaHeaders(fastaFile) {

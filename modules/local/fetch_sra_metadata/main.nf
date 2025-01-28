@@ -1,6 +1,6 @@
 process FETCH_SRA_METADATA {
     tag "Fetch SRA metadata"
-    label "process_medium"
+    label "process_single"
 
     conda "${moduleDir}/environment.yml"
 
@@ -10,9 +10,8 @@ process FETCH_SRA_METADATA {
     path sra_metadata_file
 
     output:
-    path "*_new.txt", emit: new_sra_metadata_file, optional: true
-    path "*_updated.csv", emit: updated_sra_metadata_file, optional: true
-    path "*_milk_samples.txt", emit: new_milk_sra_metadata_file, optional: true
+    path "*_updated.csv", optional: true
+    path "*_to_process.csv", emit: new_samples
 
     script:
     """

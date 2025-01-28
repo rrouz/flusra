@@ -1,15 +1,15 @@
 process BWA_MEM {
-    tag "$sra"
-    label 'process_high'
+    tag "$meta.id"
+    label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
 
     input:
-    tuple val(sra), path(reads)
+    tuple val(meta), path(reads)
     val reference
 
     output:
-    tuple val(sra), path("*.bam") , emit: bam
+    tuple val(meta), path("*.bam") , emit: bam
     path  "versions.yml"           , emit: versions
 
     script:
@@ -23,7 +23,7 @@ process BWA_MEM {
         | samtools view \\
             -F 4 -b \\
             | samtools sort \\
-                -o ${sra}.bam
+                -o ${meta.id}.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -34,7 +34,7 @@ process BWA_MEM {
 
     stub:
     """
-    touch ${prefix}.bam
+    touch ${meta.id}.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

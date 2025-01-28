@@ -1,12 +1,12 @@
 process IVAR_VARIANTS {
-    tag "$sra - $referenceGene"
+    tag "$meta.id - $referenceGene"
     label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
 
     input:
     each referenceGene
-    tuple val(sra), path(bamFile)
+    tuple val(meta), path(bamFile)
     path reference
     val gff_files
     val variant_threshold
@@ -31,7 +31,7 @@ process IVAR_VARIANTS {
     """
     samtools index $bamFile
 
-    samtools mpileup --reference $reference -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar variants -p ${sra}_${gene}_variants -t $variant_threshold -m $variant_min_depth -r $reference $gff_file_arg
+    samtools mpileup --reference $reference -r \"$referenceGene\" -A -d 0 -aa -Q 0 $bamFile | ivar variants -p ${meta.id}_${gene}_variants -t $variant_threshold -m $variant_min_depth -r $reference $gff_file_arg
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -42,7 +42,7 @@ process IVAR_VARIANTS {
 
     stub:
     """
-    touch ${sra}_${gene}_variants.tsv
+    touch ${meta.id}_${gene}_variants.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

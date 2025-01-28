@@ -1,12 +1,12 @@
 process SAMTOOLS_DEPTH {
-    tag "$sra - $referenceGene"
+    tag "$meta.id - $referenceGene"
     label 'process_low'
 
     conda "${moduleDir}/environment.yml"
 
     input:
     each referenceGene
-    tuple val(sra), path(bamFile)
+    tuple val(meta), path(bamFile)
     path reference
 
     output:
@@ -25,7 +25,7 @@ process SAMTOOLS_DEPTH {
         --threads ${task.cpus-1} \\
         -aa \\
         $bamFile \\
-        > ${sra}_${gene}_depth.tsv
+        > ${meta.id}_${gene}_depth.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -35,7 +35,7 @@ process SAMTOOLS_DEPTH {
 
     stub:
     """
-    touch ${sra}_${gene}_depth.tsv
+    touch ${meta.id}_${gene}_depth.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

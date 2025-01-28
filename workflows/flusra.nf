@@ -4,38 +4,41 @@ include { MILK_FREYJA             } from '../subworkflows/local/milk_freyja/main
 
 workflow FLUSRA {
     take:
-    sra_accessions_ch
-    milk_sra_accessions_ch
-    fetch_and_pull
+    samples_ch
 
     main:
-    sra_accessions_ch.concat(milk_sra_accessions_ch)
-        .unique()
-        .set { accessions_ch }
-
     if (params.fastq_dump_path) {
+        // Allow for the user to provide the fastq files directly instead of fetching from SRA
         Channel.fromFilePairs("${params.fastq_dump_path}/*_{1,2}.fastq", flat: false)
-            .set { reads_ch }
+            .map { id, pair -> tuple(pair, id) }
+            .set { fastq_ch }
+
+        // Join the fastq files with the samples channel
+        samples_ch.join(
+            fastq_ch,
+            by: 1,
+            failOnDuplicate: true
+        ).map { sra, meta, reads -> 
+            tuple(meta, reads)
+        }.set { reads_ch }
     } else {
-        // fetch fastq files from SRA
-        SRATOOLS_FASTERQDUMP(accessions_ch)
+        // Fetch fastq files from SRA
+        SRATOOLS_FASTERQDUMP(samples_ch)
         reads_ch = SRATOOLS_FASTERQDUMP.out.reads
     }
 
-    if (!fetch_and_pull) {
+    reads_ch.multiMap { meta, reads ->
+        samples: meta.process_flag ? tuple(meta, reads) : null
+        milk: meta.milk_flag ? tuple(meta, reads) : null
+    }.set { sample_reads_input }
 
-        if (sra_accessions_ch) {
-            sra_samples_ch = reads_ch
-                .join(sra_accessions_ch)
+    if (!params.fetch_and_pull) {
+        sample_reads_input
+            .samples
+            .filter { it != null } | PROCESS_SRA
 
-            PROCESS_SRA(sra_samples_ch, params.reference)
-        }
-
-        if (milk_sra_accessions_ch) {
-            milk_samples_ch = reads_ch
-                .join(milk_sra_accessions_ch)
-
-            MILK_FREYJA(milk_samples_ch, params.milk_barcode, params.milk_reference)
-        }
+        sample_reads_input
+            .milk
+            .filter { it != null } | MILK_FREYJA
     }
 }

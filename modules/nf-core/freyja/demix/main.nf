@@ -1,11 +1,11 @@
 process FREYJA_DEMIX {
-    tag "$sra"
-    label 'process_low'
+    tag "$meta.id"
+    label 'process_high', 'process_low_memory'
 
     conda "${moduleDir}/environment.yml"
 
     input:
-    tuple val(sra), path(variant), path(depth)
+    tuple val(meta), path(variant), path(depth)
     path barcode
 
     output:
@@ -18,7 +18,7 @@ process FREYJA_DEMIX {
         $variant \\
         $depth \\
         --barcodes $barcode \\
-        --output ${sra}.demixed
+        --output ${meta.id}.demixed
 
 
     cat <<-END_VERSIONS > versions.yml
@@ -30,7 +30,7 @@ process FREYJA_DEMIX {
 
     stub:
     """
-    touch ${sra}.demixed
+    touch ${meta.id}.demixed
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -14,12 +14,10 @@ include { MINIMAP2_ALIGN          } from '../../../modules/nf-core/minimap2/alig
 
 workflow MILK_FREYJA {
     take:
-    reads
-    barcode
-    reference
+    milk_samples_ch
 
     main:
-    MINIMAP2_ALIGN(reads, reference)
-    FREYJA_VARIANTS(MINIMAP2_ALIGN.out.bam, reference)
-    FREYJA_DEMIX(FREYJA_VARIANTS.out.variants, barcode)
+    MINIMAP2_ALIGN(milk_samples_ch, params.milk_reference)
+    FREYJA_VARIANTS(MINIMAP2_ALIGN.out.bam, params.milk_reference)
+    FREYJA_DEMIX(FREYJA_VARIANTS.out.variants, params.milk_barcode)
 }

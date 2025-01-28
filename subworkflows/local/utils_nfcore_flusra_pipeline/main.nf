@@ -27,17 +27,19 @@ workflow PIPELINE_INITIALISATION {
 
     FETCH_SRA_METADATA(bioproject, email, sra_metadata_file)
 
-    FETCH_SRA_METADATA.out.new_sra_metadata_file.splitText()
-        .map { it.trim() }
-        .set { sra_accessions_ch }
-
-    FETCH_SRA_METADATA.out.new_milk_sra_metadata_file.splitText()
-        .map { it.trim() }
-        .set { milk_samples_ch }
+    FETCH_SRA_METADATA.out.new_samples.splitCsv(header: true)
+        .map { row ->
+            meta = [
+                id: row.Run.toString(),
+                process_flag: row.process_flag.toBoolean(),
+                milk_flag: row.is_milk.toBoolean(),
+            ]
+            [meta, row.Run]
+        }
+        .set { samples_to_process }
 
     emit:
-    sra_accessions = sra_accessions_ch
-    milk_samples = milk_samples_ch
+    samples_to_process = samples_to_process
 }
 
 /*

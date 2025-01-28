@@ -13,37 +13,21 @@ workflow {
 
     if (!params.only_fetch) {
         if (params.bioproject && PIPELINE_INITIALISATION.out.sra_accessions) {
-            FLUSRA(PIPELINE_INITIALISATION.out.sra_accessions, PIPELINE_INITIALISATION.out.milk_samples, params.fetch_and_pull)
-        } else if (params.sra_accessions || params.milk_sra_accessions) {
-            // check if sra_accessions is not null
-            if (params.sra_accessions != null) {
-                Channel.fromPath(params.sra_accessions)
-                    .splitText()
-                    .map { it.trim() }
-                    .set { sra_accessions_ch }
-            } else {
-                sra_accessions_ch = Channel.empty()
-            }
-
-            // check if milk_sra_accessions is not null
-            if (params.milk_sra_accessions != null) {
-                Channel.fromPath(params.milk_sra_accessions)
-                    .splitText()
-                    .map { it.trim() }
-                    .set { milk_sra_accessions_ch }
-            } else {
-                milk_sra_accessions_ch = Channel.empty()
-            }
-
-            sra_accessions_ch.concat(milk_sra_accessions_ch)
-                .unique()
-                .ifEmpty {
-                    log.error("No SRA accessions provided or milk samples provided")
-                    exit 1
+            FLUSRA(PIPELINE_INITIALISATION.out.samples_to_process)
+        } else if (params.samples_to_process) {
+            Channel.fromPath(params.samples_to_process)
+                .splitCsv(header: true)
+                .map { row ->
+                    meta = [
+                        id: row.Run.toString(),
+                        process_flag: row.process_flag.toBoolean(),
+                        milk_flag: row.is_milk.toBoolean(),
+                    ]
+                    [meta, row.Run]
                 }
-                .view()
+                .set { samples_ch }
 
-            FLUSRA(sra_accessions_ch, milk_sra_accessions_ch, params.fetch_and_pull)
+            FLUSRA(samples_ch)
         } else {
             log.info("No additional SRA accessions to process")
         }

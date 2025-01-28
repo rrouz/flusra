@@ -260,20 +260,12 @@ def main():
         
         # Save updated metadata
         combined_metadata.to_csv(args.metadata.replace('.csv', '_updated.csv'), index=False)
-        # Save only the new SRA run IDs to a text file
-        new_sras['Run'].to_csv(args.metadata.replace('.csv', '_new.txt'), index=False, header=False)
         # Extract runs where 'isolation_source' contains "milk"
-        new_sras[new_sras['isolation_source'].str.contains(
-            'milk',
-            case=False,
-            na=False
-        )]['Run'].to_csv(
-            args.metadata.replace(
-                '.csv',
-                '_milk_samples.txt'),
-            index=False,
-            header=False
-        )
+        new_sras['is_milk'] = new_sras['isolation_source'].str.contains('milk', case=False, na=False)
+
+        new_sras['process_flag'] = True
+
+        new_sras[['Run', 'process_flag', 'is_milk']].to_csv(args.metadata.replace('.csv', '_to_process.csv'), index=False)
 
 
 if __name__ == "__main__":

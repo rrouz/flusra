@@ -1,15 +1,15 @@
 process FREYJA_VARIANTS {
-    tag "$sra"
-    label 'process_medium'
+    tag "$meta.id"
+    label 'process_high', 'process_low_memory'
 
     conda "${moduleDir}/environment.yml"
 
     input:
-    tuple val(sra), path(bamFile)
+    tuple val(meta), path(bamFile)
     path reference
 
     output:
-    tuple val(sra), path("${sra}_variants.tsv"), path("${sra}_depth.tsv") , emit: variants
+    tuple val(meta), path("*_variants.tsv"), path("*_depth.tsv") , emit: variants
     path  "versions.yml", emit: versions
 
     script:
@@ -18,8 +18,8 @@ process FREYJA_VARIANTS {
 
     freyja variants \\
         $bamFile \\
-        --variants ${sra}_variants.tsv \\
-        --depths ${sra}_depth.tsv \\
+        --variants ${meta.id}_variants.tsv \\
+        --depths ${meta.id}_depth.tsv \\
         --ref $reference
 
     cat <<-END_VERSIONS > versions.yml
@@ -31,8 +31,8 @@ process FREYJA_VARIANTS {
 
     stub:
     """
-    touch ${sra}_variant.tsv
-    touch ${sra}_depth.tsv
+    touch ${meta.id}_variants.tsv
+    touch ${meta.id}_depth.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

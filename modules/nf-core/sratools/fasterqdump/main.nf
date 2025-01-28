@@ -1,14 +1,14 @@
 process SRATOOLS_FASTERQDUMP {
-    tag "$sra"
-    label 'process_medium'
+    tag "$meta.id"
+    label 'process_single'
 
     conda "${moduleDir}/environment.yml"
 
     input:
-    val sra
+    tuple val(meta), val(sra)
 
     output:
-    tuple val(sra), path('*.fastq'), emit: reads
+    tuple val(meta), path('*.fastq'), emit: reads
     path "versions.yml"            , emit: versions
 
     script:
@@ -16,6 +16,16 @@ process SRATOOLS_FASTERQDUMP {
     fasterq-dump \\
         --threads $task.cpus \\
         ${sra}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        sratools: \$(fasterq-dump --version 2>&1 | grep -Eo '[0-9.]+')
+    END_VERSIONS
+    """
+
+    stub:
+    """
+    touch ${meta.id}.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
