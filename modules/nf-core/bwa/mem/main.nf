@@ -6,7 +6,7 @@ process BWA_MEM {
 
     input:
     tuple val(meta), path(reads)
-    val reference
+    path reference
 
     output:
     tuple val(meta), path("*.bam") , emit: bam
