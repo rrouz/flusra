@@ -25,7 +25,7 @@ workflow PIPELINE_INITIALISATION {
 
     main:
 
-    FETCH_SRA_METADATA(bioproject, email, sra_metadata_file, params.trimming_config)
+    FETCH_SRA_METADATA(bioproject, email, sra_metadata_file, params.trimming_config, params.check_retracted)
 
     FETCH_SRA_METADATA.out.new_samples.splitCsv(header: true, sep: '\t')
         .map { row ->

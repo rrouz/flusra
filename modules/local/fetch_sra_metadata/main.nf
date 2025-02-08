@@ -9,6 +9,7 @@ process FETCH_SRA_METADATA {
     val email
     path sra_metadata_file
     path trimming_config
+    val check_retracted
 
     output:
     path "*_updated.csv", optional: true
@@ -16,12 +17,14 @@ process FETCH_SRA_METADATA {
 
     script:
     def trim_config = trimming_config.name != "NO_FILE" ? "--trimming_config ${trimming_config}" : ""
+    def retracted = check_retracted ? "--check_retracted" : ""
     """
     fetch_sra_metadata.py \\
         --bioproject_ids "${bioproject_id}" \\
         --email ${email} \\
         --metadata ${sra_metadata_file} \\
-        ${trim_config}
+        ${trim_config} \\
+        ${retracted}
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
