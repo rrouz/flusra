@@ -25,5 +25,11 @@ workflow MILK_FREYJA {
         to_skip: true
             return tuple(meta, variants, depth)
     }.set { input_demix }
-    FREYJA_DEMIX(input_demix.to_demix, params.milk_barcode, params.demix_autoadapt, params.demix_depthcutoff)
+    FREYJA_DEMIX(
+        input_demix.to_demix,
+        params.milk_barcode,
+        params.demix_autoadapt,
+        params.demix_depthcutoff,
+        params.demix_lineage_hierarchy
+    )
 }

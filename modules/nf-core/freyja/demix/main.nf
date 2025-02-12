@@ -9,6 +9,7 @@ process FREYJA_DEMIX {
     path barcode
     val demix_autoadapt
     val demix_depthcutoff
+    path demix_lineage_hierarchy
 
     output:
     path "*.demixed",     emit: demixed
@@ -17,11 +18,13 @@ process FREYJA_DEMIX {
     script:
     def autoadapt = demix_autoadapt ? "--autoadapt" : ""
     def depth_cutoff = demix_depthcutoff ? "--depthcutoff $demix_depthcutoff" : ""
+    def lineage_hierarchy = demix_lineage_hierarchy.name != "NO_FILE" ? "--lineageyml ${demix_lineage_hierarchy}" : ""
     """
     freyja demix \\
         $variant \\
         $depth \\
         $autoadapt \\
+        $lineage_hierarchy \\
         $depth_cutoff \\
         --barcodes $barcode \\
         --output ${meta.id}.demixed
