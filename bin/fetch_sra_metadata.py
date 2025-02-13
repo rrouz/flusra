@@ -105,7 +105,7 @@ FIELDS = {
             'text' : True
         },
         'LibraryLayout' : {
-            'find' : './/PAIRED',
+            'find' : './/LIBRARY_LAYOUT',
             'text' : False
         },
         'LibrarySelection' : {
@@ -186,7 +186,7 @@ def read_xml_data(xml_data):
                         elif 'text' in FIELDS[field] and FIELDS[field]['text']:
                             data[field] = root0.find(FIELDS[field]['find']).text
                         elif 'text' in FIELDS[field] and not FIELDS[field]['text']:
-                            data[field] = root0.find(FIELDS[field]['find']).tag
+                            data[field] = root0.find(FIELDS[field]['find'])[0].tag
                     except AttributeError:
                         data[field] = ''
                 else:
