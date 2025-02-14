@@ -14,4 +14,3 @@ run-test:
 test: clean
 	$(MAKE) run-test
 	$(MAKE) md5sum
-

@@ -4,3 +4,4 @@ channels:
   - bioconda
 dependencies:
   - freyja=1.5.3
+  - ecos=2.0.14

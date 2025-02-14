@@ -22,7 +22,7 @@ process SAMTOOLS_DEPTH {
         depth \\
         --reference $reference \\
         -r \"$referenceGene\" \\
-        --threads ${task.cpus-1} \\
+        --threads ${task.cpus} \\
         -aa \\
         $bamFile \\
         > ${meta.id}_${gene}_depth.tsv
