@@ -155,7 +155,24 @@ FIELDS = {
     }
 
 
-def read_xml_data(xml_data):
+def read_xml_data(xml_data: str) -> pd.DataFrame:
+    """
+    Parses the provided XML metadata and extracts experiment package details into a pandas DataFrame.
+    The function operates by:
+        - Attempting to parse the XML string. If an initial parse fails, it waits 10 seconds before retrying.
+        - Iterating over each 'EXPERIMENT_PACKAGE' element found in the XML.
+        - Extracting specific metadata fields defined in the global FIELDS dictionary. For each field, the 
+          function determines whether to extract an attribute, text, or nested tag based on the provided configuration.
+        - Handling missing or malformed data by substituting empty strings.
+        - Aggregating the extracted data into a dictionary keyed by the 'Run' identifier.
+        - Converting the aggregated data into a pandas DataFrame, ensuring that 'Run' becomes a dedicated column.
+    Parameters:
+        xml_data (str): A string containing the XML metadata to be processed.
+    Returns:
+        pd.DataFrame: A DataFrame where each row represents an experiment package, with columns corresponding 
+        to the metadata fields (excluding 'Run', which is used as the index before being reset to a column).
+    """
+
 # Parse XML metadata
     try:
         root = ET.fromstring(xml_data)
@@ -201,11 +218,27 @@ def read_xml_data(xml_data):
     metadata.rename(columns={'index': 'Run'}, inplace=True)
     return metadata
 
-def get_new_srps(search_term, email):
-    """Fetch SRA metadata for a BioProject."""
+def get_new_srps(search_term: str, email: str) -> pd.DataFrame:
+    """
+    Fetches SRA metadata records for a given BioProject search term from the NCBI SRA database.
+    This function performs the following steps:
+    1. Searches for SRA submissions using the provided search_term. It retrieves submission IDs in batches until no more results are found.
+    2. For each batch of submission IDs, it fetches the detailed XML metadata in batches.
+    3. Optionally saves each XML metadata batch to a local file named 'batch_meta_{start}.xml'.
+    4. Parses each batch of XML metadata using the function 'read_xml_data' and concatenates the results into a single pandas DataFrame.
+    Parameters:
+        search_term (str): The search query string used to locate SRA submissions, typically representing a BioProject.
+        email (str): The email address to register with the Entrez API for identification purposes.
+    Returns:
+        pd.DataFrame: A pandas DataFrame containing the concatenated metadata from all fetched batches.
+                      Returns an empty DataFrame if no metadata is retrieved.
+    Raises:
+        HTTPError, IncompleteRead: If fetching data fails after the specified number of retry attempts.
+    """
+
     Entrez.email = email
     retstart = 0
-    retmax = 1000
+    retmax = 4000
     all_ids = []
     print(f"Searching for SRA submissions with the term: {search_term}")
     while True:
@@ -255,13 +288,33 @@ def get_new_srps(search_term, email):
     metadata = pd.concat(metadata_batches, ignore_index=True) if metadata_batches else pd.DataFrame()
     return metadata
 
-def check_retracted_runs(old_metadata, new_metadata):
-    """Check for retracted SRA runs."""
+def check_retracted_runs(old_metadata: pd.DataFrame, new_metadata: pd.DataFrame) -> pd.Series:
+    """
+    Check for retracted runs by comparing old and new metadata.
+    This function identifies the 'Run' entries in the old_metadata DataFrame that are not present
+    in the new_metadata DataFrame, effectively determining which runs have been retracted.
+    Parameters:
+        old_metadata (pd.DataFrame): A DataFrame containing the previous metadata, which must include a 'Run' column.
+        new_metadata (pd.DataFrame): A DataFrame containing the updated metadata, which must include a 'Run' column.
+    Returns:
+        pd.Series: A Series containing the 'Run' values that were present in old_metadata but are missing from new_metadata.
+    """
+
     retracted_runs = old_metadata[~old_metadata['Run'].isin(new_metadata['Run'])]['Run']
     return retracted_runs
 
-def parse_args():
-    """Parse command-line arguments."""
+def parse_args() -> argparse.Namespace:
+    """
+    Parses command-line arguments for the SRA metadata fetching script.
+    Returns:
+        argparse.Namespace: An object containing the following attributes:
+            - bioproject_ids (str): BioProject ID(s) to monitor. Multiple IDs should be separated by commas.
+            - email (str): Email address provided for Entrez.
+            - metadata (str): Path to the old metadata file.
+            - trimming_config (str, optional): Path to the trimming YAML configuration file (if provided).
+            - check_retracted (bool): Flag indicating whether to check for retracted SRA runs.
+    """
+
     parser = argparse.ArgumentParser(description='Fetch SRA metadata for a BioProject.')
     parser.add_argument('-b', '--bioproject_ids', type=str, required=True, help='BioProject ID to monitor. Multiple IDs should be separated by commas.')
     parser.add_argument('-e', '--email', type=str, required=True, help='Email address for Entrez')
@@ -271,6 +324,28 @@ def parse_args():
     return parser.parse_args()
 
 def main():
+    """
+    Main function to fetch, update, and process SRA metadata.
+    This function performs the following steps:
+    1. Parses command-line arguments.
+    2. Processes provided BioProject IDs to construct a search term.
+    3. Retrieves new SRA metadata using the search term and a supplied email address.
+    4. Reads the previous metadata from a CSV file.
+    5. Identifies new SRA runs by comparing the retrieved metadata against the previous metadata.
+    6. If new runs are found:
+        - Prints the number of new SRA runs.
+        - Concatenates the new runs with the previous metadata.
+        - Assigns a 'process_flag' and a boolean 'is_milk' flag based on the 'isolation_source' column.
+        - If a trimming configuration file is provided, applies global trimming settings for applicable assay types.
+        - Saves the processed information for new SRA runs to a TSV file.
+    7. If the check for retracted runs is enabled:
+        - Marks retracted runs in the combined metadata.
+        - Updates the retraction detection date for newly retracted runs.
+    8. Compares the updated metadata with the previous metadata and saves the updated metadata to a new CSV file if changes are detected.
+    Returns:
+         None
+    """
+
     args = parse_args()
 
     # Process BioProject IDs
