@@ -2,7 +2,6 @@ include { BWA_MEM                 } from '../../../modules/nf-core/bwa/mem/main'
 include { IVAR_CONSENSUS          } from '../../../modules/nf-core/ivar/consensus/main'
 include { IVAR_VARIANTS           } from '../../../modules/nf-core/ivar/variants/main'
 include { SAMTOOLS_DEPTH          } from '../../../modules/nf-core/samtools/depth/main'
-include { SRATOOLS_FASTERQDUMP    } from '../../../modules/nf-core/sratools/fasterqdump/main'
 
 
 workflow PROCESS_SRA {

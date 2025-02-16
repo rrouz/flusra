@@ -5,7 +5,7 @@ process SRATOOLS_FASTERQDUMP {
     conda "${moduleDir}/environment.yml"
 
     input:
-    tuple val(meta), val(sra)
+    tuple val(meta), path(sra)
 
     output:
     tuple val(meta), path('*.fastq'), emit: reads

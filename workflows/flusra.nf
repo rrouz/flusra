@@ -1,6 +1,7 @@
 include { PROCESS_SRA             } from '../subworkflows/local/process_sra/main'
 include { FASTP                   } from '../modules/nf-core/fastp/main'
 include { SRATOOLS_FASTERQDUMP    } from '../modules/nf-core/sratools/fasterqdump/main'
+include { SRATOOLS_PREFETCH       } from '../modules/nf-core/sratools/prefetch/main'
 include { MILK_FREYJA             } from '../subworkflows/local/milk_freyja/main'
 
 workflow FLUSRA {
@@ -24,7 +25,8 @@ workflow FLUSRA {
         }.set { reads_ch }
     } else {
         // Fetch fastq files from SRA
-        SRATOOLS_FASTERQDUMP(samples_ch)
+        SRATOOLS_PREFETCH(samples_ch)
+        SRATOOLS_FASTERQDUMP(SRATOOLS_PREFETCH.out.sra)
         reads_ch = SRATOOLS_FASTERQDUMP.out.reads
     }
 
