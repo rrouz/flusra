@@ -38,10 +38,10 @@ workflow PROCESS_SRA {
                 !params.gff_files.isEmpty() ? params.gff_files?.get(gene) ?: "${projectDir}/assets/NO_FILE" : "${projectDir}/assets/NO_FILE"
             ]
         }
-    ).set { ivar_variants_input_ch }
+    ).set { ch_ivar_variants_input }
     
     IVAR_VARIANTS(
-        ivar_variants_input_ch,
+        ch_ivar_variants_input,
         params.reference,
         params.variant_threshold,
         params.variant_min_depth

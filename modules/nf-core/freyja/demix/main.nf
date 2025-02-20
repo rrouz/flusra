@@ -15,9 +15,6 @@ process FREYJA_DEMIX {
     path "*.demixed",     emit: demixed
     path  "versions.yml", emit: versions
 
-    when:
-    depth.size() > 0
-
     script:
     def autoadapt = demix_autoadapt ? "--autoadapt" : ""
     def depth_cutoff = demix_depthcutoff ? "--depthcutoff $demix_depthcutoff" : ""

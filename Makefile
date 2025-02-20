@@ -14,3 +14,10 @@ run-test:
 test: clean
 	$(MAKE) run-test
 	$(MAKE) md5sum
+	# check if this file is not present testing/output/demixed/SRR30789620.demixed
+	@if [ ! -f testing/output/demixed/SRR30789620.demixed ]; then \
+		echo "File testing/output/demixed/SRR30789620.demixed is not present"; \
+	else \
+		echo "Error: File testing/output/demixed/SRR30789620.demixed should not exist"; \
+		exit 1; \
+	fi
