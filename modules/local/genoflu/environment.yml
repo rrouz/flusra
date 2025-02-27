@@ -3,7 +3,4 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python=3.10
   - genoflu
-  - blast
-  - openpyxl
