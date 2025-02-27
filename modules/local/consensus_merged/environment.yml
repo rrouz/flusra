@@ -1,6 +1,0 @@
-name: consensus_merged
-channels:
-  - conda-forge
-dependencies:
-  - bash=5.2.15
-  - coreutils=9.4
