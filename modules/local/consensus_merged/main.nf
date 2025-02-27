@@ -2,8 +2,6 @@ process CONSENSUS_MERGED {
     tag "$meta.id"
     label 'process_medium'
 
-    conda "${moduleDir}/environment.yml"
-
     input:
     tuple val(meta), val(genes), path(consensus_files)
 
