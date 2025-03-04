@@ -3,19 +3,20 @@ include { IVAR_CONSENSUS          } from '../../../modules/nf-core/ivar/consensu
 include { IVAR_VARIANTS           } from '../../../modules/nf-core/ivar/variants/main'
 include { SAMTOOLS_DEPTH          } from '../../../modules/nf-core/samtools/depth/main'
 include { SRATOOLS_FASTERQDUMP    } from '../../../modules/nf-core/sratools/fasterqdump/main'
-include { CONSENSUS_MERGED        } from '../../../modules/local/consensus_merged/main'
 include { GENOFLU                 } from '../../../modules/local/genoflu/main'
 include { MERGE_GENOFLU_RESULTS   } from '../../../modules/local/merge_genoflu_results/main'
 
 workflow PROCESS_SRA {
-	take:
-	sra_samples_ch
+    take:
+    sra_samples_ch
 
-	main:
+    main:
+    file("${params.outdir}/temp").mkdirs()
+    
     BWA_MEM(sra_samples_ch, params.reference)
 
     // Generate a tuple of genes from the reference fasta file
-	Channel.from(readFastaHeaders(params.reference))
+    Channel.from(readFastaHeaders(params.reference))
             .set { genes_ch }
 
     IVAR_CONSENSUS(
@@ -27,21 +28,26 @@ workflow PROCESS_SRA {
     )
 
     IVAR_CONSENSUS.out.consensus
-    .map { consensus_file -> 
-        def parts = consensus_file.getName().split('_')
-        def sampleId = parts[0]
-        def gene = parts[1]
-        [sampleId, gene, consensus_file]
-    }
-    .groupTuple(by: 0)
-    .map { sampleId, genes, files -> 
-        [[id: sampleId], genes, files]
-    }
-    .set { consensus_for_merge_ch }
+        .map { consensus_file -> 
+            def parts = consensus_file.getName().split('_')
+            def sampleId = parts[0]
+            return tuple(sampleId, consensus_file)
+        }
+        .groupTuple()
+        .map { sampleId, files ->
+            def tmpDir = file("${params.outdir}/temp")
+            def mergedFile = file("${tmpDir}/${sampleId}.fa")
+            
+            mergedFile.text = ''
+            files.each { file ->
+                mergedFile.append(file.text + '\n')
+            }
+            
+            return tuple([id: sampleId], mergedFile)
+        }
+        .set { consensus_for_genoflu_ch }
 
-    CONSENSUS_MERGED(consensus_for_merge_ch)
-    
-    GENOFLU(CONSENSUS_MERGED.out.merged_fasta)
+    GENOFLU(consensus_for_genoflu_ch)
 
     GENOFLU.out.genoflu_results
         .map { meta, tsv -> tsv }
@@ -79,4 +85,4 @@ def readFastaHeaders(fastaFile) {
     new File(fastaFile).readLines()
         .findAll { it.startsWith(">") }
         .collect { it.substring(1) }
-    }
+}
