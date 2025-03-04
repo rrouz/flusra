@@ -18,10 +18,8 @@ process MERGE_GENOFLU_RESULTS {
         exit 1
     fi
 
-    # Create header
     echo -e "Sample\tGenotype" > genoflu_results.tsv
     
-    # Combine all TSV files
     for f in ${tsv_files}; do
         cat \$f >> genoflu_results.tsv
     done
