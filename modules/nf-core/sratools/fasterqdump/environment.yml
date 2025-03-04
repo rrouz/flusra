@@ -4,3 +4,4 @@ channels:
   - bioconda
 dependencies:
   - bioconda::sra-tools=3.2.0
+  - conda-forge::pigz=2.8  

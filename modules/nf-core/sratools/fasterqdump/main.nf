@@ -9,6 +9,7 @@ process SRATOOLS_FASTERQDUMP {
 
     output:
     tuple val(meta), path('*.fastq'), emit: reads
+    path "*.fastq.gz"
     path "versions.yml"            , emit: versions
 
     script:
@@ -16,6 +17,11 @@ process SRATOOLS_FASTERQDUMP {
     fasterq-dump \\
         --threads $task.cpus \\
         ${sra}
+
+    pigz \\
+        -p $task.cpus \\
+        -k \\
+        *.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
