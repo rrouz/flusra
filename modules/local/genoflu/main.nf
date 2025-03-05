@@ -10,8 +10,8 @@ process GENOFLU {
     tuple val(meta), path(merged_fasta)
 
     output:
-    tuple val(meta), path("${meta.id}.tsv"), emit: genoflu_results
-    path "versions.yml",                      emit: versions
+    tuple val(meta), path("${meta.id}_stats.tsv"), emit: genoflu_results
+    path "versions.yml", emit: versions
 
     script:
     """
@@ -20,8 +20,9 @@ process GENOFLU {
         exit 1
     fi
 
-    # Capture genoflu output and format it into TSV
-    genoflu.py -f ${merged_fasta} | grep "Genotype" | awk -F "--> " '{print "${meta.id}\t" \$2}' > ${meta.id}.tsv
+    genoflu.py -f ${merged_fasta}
+    
+    mv *_stats.tsv ${meta.id}_stats.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -32,7 +33,7 @@ process GENOFLU {
 
     stub:
     """
-    touch ${meta.id}.tsv
+    touch ${meta.id}_stats.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
