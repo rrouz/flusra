@@ -2,7 +2,6 @@ include { BWA_MEM                 } from '../../../modules/nf-core/bwa/mem/main'
 include { IVAR_CONSENSUS          } from '../../../modules/nf-core/ivar/consensus/main'
 include { IVAR_VARIANTS           } from '../../../modules/nf-core/ivar/variants/main'
 include { SAMTOOLS_DEPTH          } from '../../../modules/nf-core/samtools/depth/main'
-include { SRATOOLS_FASTERQDUMP    } from '../../../modules/nf-core/sratools/fasterqdump/main'
 include { GENOFLU                 } from '../../../modules/local/genoflu/main'
 include { MERGE_GENOFLU_RESULTS   } from '../../../modules/local/merge_genoflu_results/main'
 
@@ -29,23 +28,22 @@ workflow PROCESS_SRA {
 
     IVAR_CONSENSUS.out.consensus
         .map { consensus_file -> 
-            def parts = consensus_file.getName().split('_')
-            def sampleId = parts[0]
+            def sampleId = consensus_file.baseName.tokenize('_')[0]
             return tuple(sampleId, consensus_file)
         }
         .groupTuple()
-        .map { sampleId, files ->
-            def tmpDir = file("${params.outdir}/temp")
-            def mergedFile = file("${tmpDir}/${sampleId}.fa")
-            
-            mergedFile.text = ''
-            files.each { file ->
-                mergedFile.append(file.text + '\n')
-            }
-            
-            return tuple([id: sampleId], mergedFile)
+        .collectFile(
+            name: { sampleId, files -> "${sampleId}.fa" },
+            storeDir: "${params.outdir}/temp",
+            newLine: true
+        ) { sampleId, files -> 
+            files as List  // Ensure it's treated as a list of Paths
         }
-        .set { consensus_for_genoflu_ch }
+        .map { file -> 
+            def sampleId = file.baseName
+            return tuple([id: sampleId], file) 
+        }
+    .set { consensus_for_genoflu_ch }
 
     GENOFLU(consensus_for_genoflu_ch)
 
