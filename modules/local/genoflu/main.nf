@@ -9,7 +9,7 @@ process GENOFLU {
     tuple val(meta), path(merged_fasta)
 
     output:
-    tuple val(meta), path("${meta.id}_stats.tsv"), emit: genoflu_results
+    tuple val(meta), path("*_stats.tsv"), emit: genoflu_results
     path "versions.yml", emit: versions
 
     script:
