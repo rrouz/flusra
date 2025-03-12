@@ -2,7 +2,6 @@ process MERGE_GENOFLU_RESULTS {
     tag "merge_results"
     label 'process_medium'
     
-    publishDir path: "${params.outdir}/genoflu", mode: 'copy', pattern: 'genoflu_results.tsv'
 
     input:
     path(tsv_files) 
