@@ -2,7 +2,6 @@ process GENOFLU {
     tag "$meta.id"
     label 'process_medium'
     
-    publishDir path: "${params.outdir}/genoflu", mode: 'copy', enabled: false, pattern: '*.tsv'
 
     conda "${moduleDir}/environment.yml"
 
