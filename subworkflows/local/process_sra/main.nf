@@ -25,25 +25,24 @@ workflow PROCESS_SRA {
         params.consensus_threshold,
         params.consensus_min_depth
     )
-
+    
     IVAR_CONSENSUS.out.consensus
-        .map { consensus_file -> 
-            def sampleId = consensus_file.baseName.tokenize('_')[0]
-            return tuple(sampleId, consensus_file)
+    .map { consensus_file -> 
+        def sampleId = consensus_file.baseName.toString().split('_')[0]
+        return tuple(sampleId, consensus_file) 
+    }
+    .groupTuple()
+    .map { sampleId, files ->
+        def mergedFile = file("${params.outdir}/${sampleId}.fa")
+        mergedFile.text = ''
+        
+        files.each { f ->
+        mergedFile.append(f.text)
         }
-        .groupTuple()
-        .collectFile(
-            name: { sampleId, files -> "${sampleId}.fa" },
-            storeDir: "${params.outdir}/temp",
-            newLine: true
-        ) { sampleId, files -> 
-            files as List  // Ensure it's treated as a list of Paths
-        }
-        .map { file -> 
-            def sampleId = file.baseName
-            return tuple([id: sampleId], file) 
-        }
-    .set { consensus_for_genoflu_ch }
+        
+        return tuple([id: sampleId], mergedFile)
+    }
+    .set { consensus_for_genoflu_ch }    
 
     GENOFLU(consensus_for_genoflu_ch)
 
