@@ -10,8 +10,6 @@ workflow PROCESS_SRA {
     sra_samples_ch
 
     main:
-    file("${params.outdir}/temp").mkdirs()
-    
     BWA_MEM(sra_samples_ch, params.reference)
 
     // Generate a tuple of genes from the reference fasta file
@@ -28,26 +26,18 @@ workflow PROCESS_SRA {
     
     IVAR_CONSENSUS.out.consensus
     .map { consensus_file -> 
-        def sampleId = consensus_file.baseName.toString().split('_')[0]
-        return tuple(sampleId, consensus_file) 
+        def sampleId = consensus_file.baseName.tokenize('_')[0]
+        return tuple(sampleId, consensus_file)
     }
-    .groupTuple()
-    .map { sampleId, files ->
-        def mergedFile = file("${params.outdir}/${sampleId}.fa")
-        mergedFile.text = ''
-        
-        files.each { f ->
-        mergedFile.append(f.text)
-        }
-        
-        return tuple([id: sampleId], mergedFile)
-    }
+    .collectFile(
+        name: { sampleId, files -> "${sampleId}.fa" },
+        newLine: true
+    )
     .set { consensus_for_genoflu_ch }    
 
     GENOFLU(consensus_for_genoflu_ch)
 
     GENOFLU.out.genoflu_results
-        .map { meta, tsv -> tsv }
         .collect()
         .set { genoflu_files_to_merge }
 
