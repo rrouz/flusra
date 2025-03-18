@@ -3,42 +3,48 @@
 import pandas as pd
 import os
 import glob
+import argparse
 
-def merge_genoflu_results():
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description='Merge GenofLu results files.')
+    parser.add_argument('-o', '--output_file', type=str, required=True, help='Name of the output merged TSV file')
+    parser.add_argument('-d', '--output_dir', type=str, required=True, help='Directory to save the output file')
+    return parser.parse_args()
+
+def merge_genoflu_results(results_file, output_dir):
     # Using glob to find all individual genoflu run files
+    os.makedirs(output_dir, exist_ok=True)
     stats_files = [f for f in glob.glob("*_stats.tsv") if os.path.isfile(f) and os.path.getsize(f) > 0]
+    new_results_list = []
     
-    results_file = "genoflu_results.tsv"
-    output_dir = os.environ.get("OUTPUT_DIR", "./")
+    for stats_file in stats_files:
+        df = pd.read_csv(stats_file, sep='\t')
+        new_results_list.append(df)
+    
     existing_file_path = os.path.join(output_dir, results_file)
     
-    # If genoflu results file exists
-    if os.path.isfile(existing_file_path):
-        existing_results = pd.read_csv(existing_file_path, sep='\t')
-        new_results_list = []
-        for stats_file in stats_files:
-            df = pd.read_csv(stats_file, sep='\t')
-            new_results_list.append(df)
-
-        if new_results_list:
-            new_results = pd.concat(new_results_list)
-
+    if new_results_list:
+        new_results = pd.concat(new_results_list)
+        
+        # If genoflu results file exists
+        if os.path.isfile(existing_file_path):
+            existing_results = pd.read_csv(existing_file_path, sep='\t')
+            
             # Use the sample ID column (first column) as the identifier for duplicates
             sample_id_col = existing_results.columns[0]
             unique_new_results = new_results[~new_results[sample_id_col].isin(existing_results[sample_id_col])]
             combined_results = pd.concat([existing_results, unique_new_results])
-            combined_results.to_csv(results_file, sep='\t', index=False)
-    
-    else:
-        # If no existing genoflu results
-        new_results_list = []
-        for stats_file in stats_files:
-            df = pd.read_csv(stats_file, sep='\t')
-            new_results_list.append(df)
         
-        if new_results_list:
-            combined_results = pd.concat(new_results_list)
-            combined_results.to_csv(results_file, sep='\t', index=False)
+        else:
+            # If no existing file, use just the new results
+            combined_results = new_results
+        
+        combined_results.to_csv(results_file, sep='\t', index=False)
+        combined_results.to_csv(existing_file_path, sep='\t', index=False)
+
+def main():
+    args = parse_args()
+    merge_genoflu_results(args.output_file, args.output_dir)
 
 if __name__ == "__main__":
-    merge_genoflu_results()
+    main()
