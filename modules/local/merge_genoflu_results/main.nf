@@ -11,8 +11,9 @@ process MERGE_GENOFLU_RESULTS {
 
     script:
     """
-    export OUTPUT_DIR="${params.outdir}/genoflu"
+    export OUTPUT_DIR="${params.genoflu_outdir ?: params.outdir + '/genoflu'}"
     merge_genoflu.py \\
+        --input '${tsv_files}'
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
