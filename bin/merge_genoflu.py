@@ -13,7 +13,6 @@ def parse_args() -> argparse.Namespace:
 
 def merge_genoflu_results(results_file, output_dir):
     # Using glob to find all individual genoflu run files
-    os.makedirs(output_dir, exist_ok=True)
     stats_files = [f for f in glob.glob("*_stats.tsv") if os.path.isfile(f) and os.path.getsize(f) > 0]
     new_results_list = []
     
