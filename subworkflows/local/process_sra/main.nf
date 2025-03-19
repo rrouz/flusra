@@ -38,10 +38,16 @@ workflow PROCESS_SRA {
     GENOFLU(consensus_for_genoflu_ch)
 
     GENOFLU.out.genoflu_results
-        .collect()
-        .set { genoflu_files_to_merge }
+    .collect()
+    .set { genoflu_files_to_merge }
 
-    MERGE_GENOFLU_RESULTS(genoflu_files_to_merge)
+    // Create a channel with previous results file or a placeholder then append new results
+    Channel.fromPath("${params.outdir}/genoflu/${params.genoflu_results}")
+        .ifEmpty { file("NO_FILE") }
+        .set { existing_results_ch }
+
+    // Pass both new genoflu results and any existing results
+    MERGE_GENOFLU_RESULTS(genoflu_files_to_merge, existing_results_ch)
 
     SAMTOOLS_DEPTH(
         BWA_MEM.out.bam,
