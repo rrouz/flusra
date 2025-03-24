@@ -41,10 +41,7 @@ workflow PROCESS_SRA {
     .collect()
     .set { genoflu_files_to_merge }
     
-    Channel.fromPath("${params.outdir}/genoflu/${params.genoflu_results}")
-        .set { existing_results_ch }
-
-    MERGE_GENOFLU_RESULTS(genoflu_files_to_merge, existing_results_ch)
+    MERGE_GENOFLU_RESULTS(genoflu_files_to_merge, params.genoflu_results)
 
     SAMTOOLS_DEPTH(
         BWA_MEM.out.bam,
