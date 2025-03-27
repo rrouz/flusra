@@ -1,13 +1,13 @@
 process GENOFLU {
     label 'process_medium'
-    
+
     conda "${moduleDir}/environment.yml"
 
     input:
-    path(merged_fasta)
+    path merged_fasta
 
     output:
-    path("*_stats.tsv"), emit: genoflu_results
+    path "*_stats.tsv", emit: genoflu_results
     path "versions.yml", emit: versions
 
     script:
