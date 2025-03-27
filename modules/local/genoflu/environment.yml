@@ -3,4 +3,4 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - genoflu=1.0.6
+  - genoflu=1.06
